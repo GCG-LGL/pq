@@ -1,0 +1,4068 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>宫诚阁客户排期管理系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "微软雅黑", "Microsoft YaHei", sans-serif;
+        }
+        body {
+            background-color: #f8f9fa;
+            color: #333;
+            font-size: 16px;
+            padding-bottom: 80px;
+            transition: all 0.3s ease;
+        }
+        .header {
+            background-color: #8B0000;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .tab-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            background-color: #8B0000;
+            border-top: 1px solid #6B0000;
+            z-index: 999;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        }
+        .tab-item {
+            flex: 1;
+            text-align: center;
+            padding: 12px 0;
+            font-size: 14px;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        .tab-item:hover {
+            color: #fff;
+            background-color: #6B0000;
+        }
+        .tab-item.active {
+            color: #fff;
+            font-weight: bold;
+            background-color: #6B0000;
+        }
+        .tab-item.active::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 20%;
+            right: 20%;
+            height: 3px;
+            background-color: #fff;
+            border-radius: 3px 3px 0 0;
+        }
+        .page {
+            display: none;
+            padding: 15px;
+            animation: fadeIn 0.3s ease;
+        }
+        .page.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+        .card-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+            color: #2c3e50;
+        }
+        .form-item {
+            margin-bottom: 15px;
+        }
+        .form-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #555;
+        }
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+        .form-textarea {
+            min-height: 100px;
+            resize: none;
+        }
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            background-color: #3498db;
+            color: white;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+        }
+        .btn:hover {
+            background-color: #2980b9;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
+        }
+        .btn:active {
+            transform: translateY(0);
+        }
+        .btn-secondary {
+            background-color: #7f8c8d;
+            margin-right: 10px;
+            width: 48%;
+        }
+        .btn-secondary:hover {
+            background-color: #6c757d;
+        }
+        .btn-group {
+            display: flex;
+            justify-content: space-between;
+        }
+        .switch {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .switch input {
+            width: 40px;
+            height: 20px;
+            cursor: pointer;
+        }
+        .list {
+            margin-top: 10px;
+        }
+        .list-item {
+            padding: 15px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            transition: all 0.3s ease;
+        }
+        .list-item:hover {
+            background-color: #f8f9fa;
+        }
+        .list-item:last-child {
+            border-bottom: none;
+        }
+        .list-item-info {
+            flex: 1;
+        }
+        .list-item-opt {
+            display: flex;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+        .opt-btn {
+            padding: 6px 12px;
+            font-size: 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .opt-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .opt-btn-edit {
+            background-color: #3498db;
+            color: white;
+        }
+        .opt-btn-edit:hover {
+            background-color: #2980b9;
+        }
+        .opt-btn-del {
+            background-color: #e74c3c;
+            color: white;
+        }
+        .opt-btn-del:hover {
+            background-color: #c0392b;
+        }
+        .opt-btn-status {
+            background-color: #f39c12;
+            color: white;
+        }
+        .opt-btn-status:hover {
+            background-color: #e67e22;
+        }
+        .query-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .query-bar select {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+        .query-bar select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+        .query-bar .btn {
+            margin-top: 0;
+            flex-shrink: 0;
+        }
+        .empty-tip {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .preview-card {
+            background-color: #f8f9fa;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin-bottom: 12px;
+            border-radius: 0 8px 8px 0;
+            transition: all 0.3s ease;
+        }
+        .preview-card:hover {
+            background-color: #e3f2fd;
+            transform: translateX(5px);
+        }
+        .copy-tip {
+            text-align: center;
+            color: #27ae60;
+            margin-top: 10px;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        .modal-content {
+            background-color: white;
+            border-radius: 10px;
+            padding: 25px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            animation: scaleIn 0.3s ease;
+        }
+        @keyframes scaleIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .modal-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #2c3e50;
+        }
+        .modal-btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+        }
+        .modal-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        .modal-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .modal-btn-confirm {
+            background-color: #3498db;
+            color: white;
+        }
+        .modal-btn-confirm:hover {
+            background-color: #2980b9;
+        }
+        .modal-btn-cancel {
+            background-color: #e0e0e0;
+            color: #333;
+        }
+        .modal-btn-cancel:hover {
+            background-color: #d0d0d0;
+        }
+        .time-item {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+        .time-item input {
+            flex: 1;
+        }
+        .time-item label {
+            min-width: 50px;
+            color: #555;
+        }
+        .course-item {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .course-item input {
+            flex: 1;
+            width: auto;
+        }
+        .course-item label {
+            width: 80px;
+            color: #555;
+        }
+        /* 新增隐藏的cust-id输入框 */
+        #cust-id {
+            display: none;
+        }
+        /* 响应式设计 */
+        @media (max-width: 480px) {
+            .card {
+                padding: 15px;
+            }
+            .btn {
+                padding: 12px;
+            }
+            .list-item {
+                padding: 12px;
+            }
+            .list-item-opt {
+                flex-direction: column;
+                gap: 4px;
+            }
+            .opt-btn {
+                padding: 4px 8px;
+                font-size: 11px;
+            }
+        }
+    </style>
+
+</head>
+<body>
+    <div class="header">宫诚阁排期管理系统 V1.0.20260306</div>
+
+    <!-- 底部Tab栏 -->
+    <div class="tab-bar">
+        <div class="tab-item active" onclick="switchToPage('page-schedule-view', this)">排期视图</div>
+        <div class="tab-item" onclick="switchToPage('page-schedule', this)">排期查询</div>
+        <div class="tab-item" onclick="switchToPage('page-add-schedule', this)">客户排期</div>
+        <div class="tab-item" onclick="switchToPage('page-customer', this)">客户管理</div>
+        <div class="tab-item" onclick="switchToPage('page-setting', this)">系统设置</div>
+    </div>
+
+    <!-- 排期查询页 -->
+    <div class="page" id="page-schedule">
+        <div class="card">
+            <div class="card-title">排期查询</div>
+            <div class="query-bar">
+                <select id="schedule-query-type">
+                    <option value="date">按日期查询</option>
+                    <option value="customer">按客户查询</option>
+                </select>
+                <select id="schedule-query-status">
+                    <option value="all">全部</option>
+                    <option value="completed">已完成</option>
+                    <option value="uncompleted">未完成</option>
+                </select>
+                <button class="btn" style="width: auto; padding: 0 15px;" onclick="querySchedule()">查询</button>
+            </div>
+            <div class="form-item" id="query-date-box">
+                <label class="form-label">选择日期</label>
+                <input type="date" class="form-input" id="query-date" value="">
+            </div>
+            <div class="form-item" id="query-customer-box" style="display: none;">
+                <label class="form-label">选择客户</label>
+                <input type="text" class="form-input" id="query-customer-search" placeholder="搜索客户姓名或手机号">
+                <select class="form-select" id="query-customer">
+                    <option value="">请选择客户</option>
+                </select>
+            </div>
+            <div class="btn-group" style="margin-bottom: 10px;">
+                <button class="btn" style="background-color: #3498db; flex: 1;" onclick="copyAllSchedule()">复制所有排期信息</button>
+                <button class="btn" style="background-color: #f39c12; flex: 1;" onclick="copySelectedSchedule()">复制选择排期信息</button>
+                <button class="btn" style="background-color: #e74c3c; flex: 1;" onclick="batchDeleteSchedule()">批量删除</button>
+            </div>
+            <div class="copy-tip" id="copy-tip">复制成功！可直接粘贴到微信</div>
+            
+            <!-- 排期编辑表单 -->
+            <div class="card" id="schedule-edit-form" style="display: none;">
+                <div class="card-title">编辑排期</div>
+                <input type="hidden" id="edit-schedule-id" value="">
+                <div class="form-item">
+                    <label class="form-label">选择客户</label>
+                    <select class="form-select" id="edit-customer">
+                        <option value="">请选择客户</option>
+                    </select>
+                </div>
+                <div class="form-item">
+                    <label class="form-label">排期日期</label>
+                    <input type="date" class="form-input" id="edit-date" value="">
+                </div>
+                <div class="form-item">
+                    <label class="form-label">排期时间</label>
+                    <input type="time" class="form-input" id="edit-time" value="">
+                </div>
+                <div class="form-item">
+                    <label class="form-label">主要调理项目</label>
+                    <select class="form-select" id="edit-project">
+                        <option value="">请选择调理项目</option>
+                    </select>
+                </div>
+                <div class="form-item">
+                    <label class="form-label">排期类型</label>
+                    <select class="form-select" id="edit-type">
+                        <option value="single">单次</option>
+                        <option value="batch">批量</option>
+                    </select>
+                </div>
+                <div class="form-item">
+                    <label class="form-label">状态</label>
+                    <select class="form-select" id="edit-status">
+                        <option value="uncompleted">未完成</option>
+                        <option value="completed">已完成</option>
+                    </select>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-secondary" onclick="cancelEditSchedule()">取消</button>
+                    <button class="btn" onclick="saveSchedule()">保存修改</button>
+                </div>
+            </div>
+            
+            <div class="list" id="schedule-list">
+                <div class="empty-tip">暂无排期数据，请先添加排期</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 排期视图页 -->
+    <div class="page active" id="page-schedule-view">
+        <div class="card">
+            <div class="card-title">排期视图</div>
+            <div class="form-item">
+                <div class="btn-group" style="margin-bottom: 15px;">
+                    <button class="btn btn-secondary" onclick="changeMonth(-1)" style="flex: 0.5;">上个月</button>
+                    <div style="flex: 2; text-align: center; padding: 10px; font-weight: bold; font-size: 18px;" id="current-month"></div>
+                    <button class="btn btn-secondary" onclick="changeMonth(1)" style="flex: 0.5;">下个月</button>
+                </div>
+            </div>
+            <div id="calendar-container" style="margin-bottom: 20px;">
+                <!-- 日历将在这里生成 -->
+            </div>
+            <div class="card">
+                <div class="card-title" id="selected-date-title">2026年3月6日 排期客户</div>
+                <div class="list" id="schedule-view-list">
+                    <div class="empty-tip">暂无排期数据</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 客户管理页 -->
+    <div class="page" id="page-customer">
+        <div class="card">
+            <div class="card-title">添加客户</div>
+            <!-- 新增隐藏的客户ID输入框 -->
+            <input type="hidden" id="cust-id" value="">
+            <div class="form-item">
+                <label class="form-label">姓名</label>
+                <input type="text" class="form-input" id="cust-name" placeholder="请输入客户姓名">
+            </div>
+            <div class="form-item">
+                <label class="form-label">性别</label>
+                <select class="form-select" id="cust-sex">
+                    <option value="男">男</option>
+                    <option value="女">女</option>
+                </select>
+            </div>
+            <div class="form-item">
+                <label class="form-label">手机号</label>
+                <input type="tel" class="form-input" id="cust-phone" placeholder="请输入手机号">
+            </div>
+            <div class="form-item">
+                <label class="form-label">调理项目</label>
+                <select class="form-select" id="cust-project">
+                    <option value="">请选择调理项目</option>
+                </select>
+            </div>
+            <div class="form-item">
+                <label class="form-label">完成疗程数量</label>
+                <input type="number" class="form-input" id="cust-course-num" placeholder="请输入数字" value="0" min="0">
+            </div>
+            <div class="form-item">
+                <label class="form-label">备注</label>
+                <textarea class="form-textarea" id="cust-remark" placeholder="请输入备注（选填）"></textarea>
+            </div>
+            <button class="btn" id="add-customer-btn" onclick="addCustomer()">添加客户</button>
+        </div>
+
+        <div class="card">
+            <div class="card-title">客户列表</div>
+            <div class="list" id="customer-list">
+                <div class="empty-tip">暂无客户数据，请先添加</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 客户排期页 -->
+    <div class="page" id="page-add-schedule">
+        <!-- 单次排期 -->
+        <div class="card">
+            <div class="card-title">单次排期</div>
+            <div class="form-item">
+                <label class="form-label">选择客户</label>
+                <input type="text" class="form-input" id="single-customer-search" placeholder="搜索客户姓名或手机号">
+                <select class="form-select" id="single-customer">
+                    <option value="">请选择客户</option>
+                </select>
+            </div>
+            <div class="form-item">
+                <label class="form-label">排期日期</label>
+                <input type="date" class="form-input" id="single-date" value="">
+            </div>
+            <div class="form-item">
+                <label class="form-label">主要调理项目</label>
+                <select class="form-select" id="single-project">
+                    <option value="">请选择调理项目</option>
+                </select>
+            </div>
+            <button class="btn" onclick="addSingleSchedule()">添加单次排期</button>
+        </div>
+
+        <!-- 批量排期 -->
+        <div class="card">
+            <div class="card-title">批量排期</div>
+            <div class="form-item">
+                <label class="form-label">选择客户</label>
+                <input type="text" class="form-input" id="batch-customer-search" placeholder="搜索客户姓名或手机号">
+                <select class="form-select" id="batch-customer">
+                    <option value="">请选择客户</option>
+                </select>
+            </div>
+            <div class="form-item">
+                <label class="form-label">开始日期</label>
+                <input type="date" class="form-input" id="batch-start-date" value="">
+            </div>
+            <div class="form-item">
+                <label class="form-label">疗程模式</label>
+                <select class="form-select" id="batch-course-type">
+                    <option value="base">基础疗程</option>
+                    <option value="enhance">加强疗程</option>
+                </select>
+            </div>
+            <div class="form-item" id="batch-project-base">
+                <label class="form-label">主要调理项目</label>
+                <select class="form-select" id="batch-project">
+                    <option value="">请选择调理项目</option>
+                </select>
+            </div>
+            <div class="form-item" id="batch-project-enhance" style="display: none;">
+                <label class="form-label">前七主要调理项目</label>
+                <select class="form-select" id="batch-project-pre7">
+                    <option value="">请选择调理项目</option>
+                </select>
+            </div>
+            <div class="form-item" id="batch-project-enhance-after" style="display: none;">
+                <label class="form-label">后三主要调理项目</label>
+                <select class="form-select" id="batch-project-after3">
+                    <option value="">请选择调理项目</option>
+                </select>
+            </div>
+            <button class="btn" style="background-color: #3498db;" onclick="previewBatchSchedule()">预览排期</button>
+            <button class="btn" style="display: none;" id="confirm-batch-btn" onclick="confirmBatchSchedule()">确认添加批量排期</button>
+        </div>
+
+        <!-- 批量排期预览 -->
+        <div class="card" id="batch-preview-box" style="display: none;">
+            <div class="card-title">排期预览</div>
+            <div id="batch-preview-list"></div>
+        </div>
+    </div>
+
+    <!-- 系统设置页 -->
+    <div class="page" id="page-setting">
+        <!-- 可排期时间段设置 -->
+        <div class="card">
+            <div class="card-title">可排期时间段设置</div>
+            <div class="time-item">
+                <label>上午：</label>
+                <input type="time" class="form-input" id="work-time-morning-start" value="09:30">
+                <label>-</label>
+                <input type="time" class="form-input" id="work-time-morning-end" value="12:30">
+            </div>
+            <div class="time-item">
+                <label>下午：</label>
+                <input type="time" class="form-input" id="work-time-afternoon-start" value="15:30">
+                <label>-</label>
+                <input type="time" class="form-input" id="work-time-afternoon-end" value="18:30">
+            </div>
+            <div class="switch form-item">
+                <label>开启晚上工作时间</label>
+                <input type="checkbox" id="work-time-night-open" checked>
+            </div>
+            <div class="time-item" id="night-time-box">
+                <label>晚上：</label>
+                <input type="time" class="form-input" id="work-time-night-start" value="19:30">
+                <label>-</label>
+                <input type="time" class="form-input" id="work-time-night-end" value="21:30">
+            </div>
+        </div>
+
+        <!-- 服务时间设置 -->
+        <div class="card">
+            <div class="card-title">单个客户服务时间</div>
+            <div class="form-item">
+                <label class="form-label">服务时长（分钟）</label>
+                <input type="number" class="form-input" id="service-time" value="60" min="10" step="10">
+            </div>
+        </div>
+
+        <!-- 疗程参数设置 -->
+        <div class="card">
+            <div class="card-title">基础疗程参数</div>
+            <div class="form-item">
+                <label class="form-label">一个疗程次数</label>
+                <input type="number" class="form-input" id="base-course-num" value="6" min="1">
+            </div>
+            <div class="form-item">
+                <label class="form-label">每次相隔天数</label>
+                <input type="number" class="form-input" id="base-course-day" value="3" min="1">
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">加强疗程参数（前7后3）</div>
+            <div class="course-item"><label>前2次：</label><input type="number" class="form-input" id="enhance-pre2" value="3" min="1">天</div>
+            <div class="course-item"><label>前3次：</label><input type="number" class="form-input" id="enhance-pre3" value="3" min="1">天</div>
+            <div class="course-item"><label>前4次：</label><input type="number" class="form-input" id="enhance-pre4" value="3" min="1">天</div>
+            <div class="course-item"><label>前5次：</label><input type="number" class="form-input" id="enhance-pre5" value="5" min="1">天</div>
+            <div class="course-item"><label>前6次：</label><input type="number" class="form-input" id="enhance-pre6" value="6" min="1">天</div>
+            <div class="course-item"><label>前7次：</label><input type="number" class="form-input" id="enhance-pre7" value="7" min="1">天</div>
+            <div class="course-item"><label>后1次：</label><input type="number" class="form-input" id="enhance-after1" value="3" min="1">天</div>
+            <div class="course-item"><label>后2次：</label><input type="number" class="form-input" id="enhance-after2" value="3" min="1">天</div>
+            <div class="course-item"><label>后3次：</label><input type="number" class="form-input" id="enhance-after3" value="4" min="1">天</div>
+        </div>
+
+        <!-- 调理项目管理 -->
+        <div class="card">
+            <div class="card-title">调理项目管理</div>
+            <div class="form-item">
+                <label class="form-label">添加调理项目</label>
+                <input type="text" class="form-input" id="project-name" placeholder="请输入调理项目名称">
+            </div>
+            <button class="btn" onclick="addProject()">添加项目</button>
+            <div class="list" id="project-list">
+                <div class="empty-tip">暂无调理项目，请先添加</div>
+            </div>
+        </div>
+
+        <!-- 休息日/节假日设置 -->
+        <div class="card">
+            <div class="card-title">每周休息日设置</div>
+            <div class="switch form-item">
+                <label>周日</label>
+                <input type="checkbox" id="rest-sun" checked>
+            </div>
+            <div class="switch form-item">
+                <label>周一</label>
+                <input type="checkbox" id="rest-mon">
+            </div>
+            <div class="switch form-item">
+                <label>周二</label>
+                <input type="checkbox" id="rest-tue">
+            </div>
+            <div class="switch form-item">
+                <label>周三</label>
+                <input type="checkbox" id="rest-wed">
+            </div>
+            <div class="switch form-item">
+                <label>周四</label>
+                <input type="checkbox" id="rest-thu">
+            </div>
+            <div class="switch form-item">
+                <label>周五</label>
+                <input type="checkbox" id="rest-fri">
+            </div>
+            <div class="switch form-item">
+                <label>周六</label>
+                <input type="checkbox" id="rest-sat">
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">重要节假日设置</div>
+            <div class="form-item">
+                <label class="form-label">添加节假日（公历，如2026-02-16）</label>
+                <input type="date" class="form-input" id="holiday-date">
+            </div>
+            <button class="btn" onclick="addHoliday()">添加节假日</button>
+            <div class="list" id="holiday-list">
+                <div class="empty-tip">暂无节假日，请先添加</div>
+            </div>
+        </div>
+
+        <!-- 数据管理 -->
+        <div class="card">
+            <div class="card-title">数据管理</div>
+            <button class="btn" style="background-color: #3498db;" onclick="exportData()">导出数据</button>
+            <button class="btn" style="background-color: #27ae60;" onclick="importData()">导入数据</button>
+            <button class="btn" style="background-color: #f39c12;" onclick="backupData()">备份数据</button>
+            <button class="btn" style="background-color: #e74c3c;" onclick="restoreData()">恢复数据</button>
+        </div>
+
+        <button class="btn" style="background-color: #27ae60;" onclick="saveSetting()">保存所有设置</button>
+    </div>
+
+    <!-- 确认弹窗 -->
+    <div class="modal" id="confirm-modal">
+        <div class="modal-content">
+            <div class="modal-title" id="modal-title">确认修改状态？</div>
+            <div class="modal-btn-group">
+                <button class="modal-btn modal-btn-cancel" onclick="closeModal()">取消</button>
+                <button class="modal-btn modal-btn-confirm" onclick="confirmModal()">确认</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 核心：1900-2100年农历天文数据（专业级）
+        const LUNAR_DATA = [
+          0x04bd8,0x04ae0,0x0a570,0x054d5,0x0d260,0x0d950,0x16554,0x056a0,0x09ad0,0x055d2,
+          0x04ae0,0x0a5b6,0x0a4d0,0x0d250,0x1d255,0x0b540,0x0d6a0,0x0ada2,0x095b0,0x14977,
+          0x04970,0x0a4b0,0x0b4b5,0x06a50,0x06d40,0x1ab54,0x02b60,0x09570,0x052f2,0x04970,
+          0x06566,0x0d4a0,0x0ea50,0x06e95,0x05ad0,0x02b60,0x186e3,0x092e0,0x1c8d7,0x0c950,
+          0x0d4a0,0x1d8a6,0x0b550,0x056a0,0x1a5b4,0x025d0,0x092d0,0x0d2b2,0x0a950,0x0b557,
+          0x06ca0,0x0b550,0x15355,0x04da0,0x0a5d0,0x14573,0x052d0,0x0a9a8,0x0e950,0x06aa0,
+          0x0aea6,0x0ab50,0x04b60,0x0aae4,0x0a570,0x05260,0x0f263,0x0d950,0x05b57,0x056a0,
+          0x096d0,0x04dd5,0x04ad0,0x0a4d0,0x0d4d4,0x0d250,0x0d558,0x0b540,0x0b5a0,0x195a6,
+          0x095b0,0x049b0,0x0a974,0x0a4b0,0x0b27a,0x06a50,0x06d40,0x0af46,0x0ab60,0x09570,
+          0x04af5,0x04970,0x064b0,0x074a3,0x0ea50,0x06b58,0x055c0,0x0ab60,0x096d5,0x092e0,
+          0x0c960,0x0d954,0x0d4a0,0x0da50,0x07552,0x056a0,0x0abb7,0x025d0,0x092d0,0x0cab5,
+          0x0a950,0x0b4a0,0x0baa4,0x0ad50,0x055d9,0x04ba0,0x0a5b0,0x15176,0x052b0,0x0a930,
+          0x07954,0x06aa0,0x0ad50,0x05b52,0x04b60,0x0a6e6,0x0a4e0,0x0d260,0x0ea65,0x0d530,
+          0x05aa0,0x076a3,0x096d0,0x04bd7,0x04ad0,0x0a4d0,0x1d0b6,0x0d250,0x0d520,0x0dd45,
+          0x0b5a0,0x056d0,0x055b2,0x049b0,0x0a577,0x0a4b0,0x0aa50,0x1b255,0x06d20,0x0ada0,
+          0x18b67,0x095b0,0x049b0,0x0a974,0x0a4b0,0x0b27a,0x06a50,0x06d40,0x0af46,0x0ab60,
+          0x09570,0x04af5,0x04970,0x064b0,0x074a3,0x0ea50,0x06b58,0x055c0,0x0ab60,0x096d5,
+          0x092e0,0x0c960,0x0d954,0x0d4a0,0x0da50,0x07552,0x056a0,0x0abb7,0x025d0,0x092d0,
+          0x0cab5,0x0a950,0x0b4a0,0x0baa4,0x0ad50,0x055d9,0x04ba0,0x0a5b0,0x15176,0x052b0
+        ];
+
+        // 基础配置 - 修复农历日期显示格式（1-10日为初一至初十）
+        const SOLAR_MONTH = [31,28,31,30,31,30,31,31,30,31,30,31];
+        const GAN = ["甲","乙","丙","丁","戊","己","庚","辛","壬","癸"];
+        const ZHI = ["子","丑","寅","卯","辰","巳","午","未","申","酉","戌","亥"];
+        const ANIMAL = ["鼠","牛","虎","兔","龙","蛇","马","羊","猴","鸡","狗","猪"];
+        const LUNAR_MONTH = ["正","二","三","四","五","六","七","八","九","十","冬","腊"];
+        const LUNAR_DAY = [
+          "", "初一","初二","初三","初四","初五","初六","初七","初八","初九","初十",
+          "十一","十二","十三","十四","十五","十六","十七","十八","十九",
+          "二十","廿一","廿二","廿三","廿四","廿五","廿六","廿七","廿八","廿九","三十"
+        ];
+
+        // 工具函数：计算农历年总天数
+        function getLunarYearDays(year) {
+          let sum = 348;
+          const data = LUNAR_DATA[year - 1900];
+          for (let i = 0x8000; i > 0x8; i >>= 1) {
+            sum += (data & i) ? 1 : 0;
+          }
+          return sum + getLeapDays(year);
+        }
+
+        // 工具函数：获取闰月
+        function getLeapMonth(year) {
+          return LUNAR_DATA[year - 1900] & 0xf;
+        }
+
+        // 工具函数：获取闰月天数
+        function getLeapDays(year) {
+          const leapMonth = getLeapMonth(year);
+          if (leapMonth === 0) return 0;
+          return (LUNAR_DATA[year - 1900] & 0x10000) ? 30 : 29;
+        }
+
+        // 工具函数：获取农历月天数
+        function getLunarMonthDays(year, month) {
+          return (LUNAR_DATA[year - 1900] & (0x10000 >> month)) ? 30 : 29;
+        }
+
+        // 核心算法：公历转农历（专业级，无死循环）
+        function solarToLunar(solarYear, solarMonth, solarDay) {
+          // 1. 校验范围（仅开放2026-2036）
+          if (solarYear < 2026 || solarYear > 2036) return null;
+
+          // 2. 处理闰年2月
+          var solarMonthCopy = [];
+          for (var i = 0; i < SOLAR_MONTH.length; i++) {
+            solarMonthCopy[i] = SOLAR_MONTH[i];
+          }
+          if (solarYear % 4 === 0 && (solarYear % 100 !== 0 || solarYear % 400 === 0)) {
+            solarMonthCopy[1] = 29;
+          }
+
+          // 3. 计算从1900-01-31到目标日期的总天数
+          var totalDays = 0;
+          // 计算1900到solarYear-1年的天数
+          for (var i = 1900; i < solarYear; i++) {
+            totalDays += (i % 4 === 0 && (i % 100 !== 0 || i % 400 === 0)) ? 366 : 365;
+          }
+          // 计算当年1月到solarMonth-1月的天数
+          for (var i = 0; i < solarMonth - 1; i++) {
+            totalDays += solarMonthCopy[i];
+          }
+          // 加上当月的天数
+          totalDays += solarDay - 1;
+          // 1900-01-31是农历1900年正月初一，减去前面30天
+          totalDays -= 30;
+
+          // 4. 查找农历年份
+          var lunarYear = 1900;
+          var yearDays = getLunarYearDays(lunarYear);
+          while (totalDays >= yearDays && lunarYear < 2100) {
+            totalDays -= yearDays;
+            lunarYear++;
+            yearDays = getLunarYearDays(lunarYear);
+          }
+
+          // 5. 查找农历月份
+          var leapMonth = getLeapMonth(lunarYear); // 0=无闰月
+          var lunarMonth = 1;
+          var isLeap = false;
+          var monthDays = getLunarMonthDays(lunarYear, lunarMonth);
+
+          // 循环查找月份（增加最大循环次数限制）
+          var loopCount = 0;
+          while (totalDays >= monthDays && loopCount < 100) {
+            totalDays -= monthDays;
+            lunarMonth++;
+            // 处理闰月
+            if (leapMonth > 0 && lunarMonth === leapMonth + 1 && !isLeap) {
+              monthDays = getLeapDays(lunarYear);
+              isLeap = true;
+            } else {
+              monthDays = getLunarMonthDays(lunarYear, lunarMonth);
+              isLeap = false;
+            }
+            loopCount++;
+          }
+
+          // 6. 计算农历日期
+          var lunarDay = totalDays + 1;
+
+          // 7. 计算干支年
+          var ganIndex = (lunarYear - 1900 + 6) % 10;
+          var zhiIndex = (lunarYear - 1900) % 12;
+          var yearGanZhi = GAN[ganIndex] + ZHI[zhiIndex];
+          var yearAnimal = ANIMAL[zhiIndex];
+
+          // 8. 格式化农历月份
+          var lunarMonthName = LUNAR_MONTH[lunarMonth - 1] + "月";
+          // 格式化农历日期 - 使用修复后的LUNAR_DAY数组
+          var lunarDayName = LUNAR_DAY[lunarDay] || lunarDay + "日";
+
+          return {
+            yearGanZhi: yearGanZhi + "年",
+            yearAnimal: yearAnimal,
+            lunarMonth: lunarMonthName,
+            lunarDay: lunarDayName,
+            isLeap: isLeap
+          };
+        }
+
+        // 二十四节气计算函数
+        function getSolarTerm(year, month, day) {
+          // 2026年二十四节气日期（简化版）
+          var solarTerms2026 = {
+            '01-05': '小寒',
+            '01-20': '大寒',
+            '02-04': '立春',
+            '02-19': '雨水',
+            '03-05': '惊蛰',
+            '03-20': '春分',
+            '04-05': '清明',
+            '04-20': '谷雨',
+            '05-05': '立夏',
+            '05-21': '小满',
+            '06-05': '芒种',
+            '06-21': '夏至',
+            '07-07': '小暑',
+            '07-23': '大暑',
+            '08-07': '立秋',
+            '08-23': '处暑',
+            '09-07': '白露',
+            '09-23': '秋分',
+            '10-08': '寒露',
+            '10-23': '霜降',
+            '11-07': '立冬',
+            '11-22': '小雪',
+            '12-07': '大雪',
+            '12-22': '冬至'
+          };
+          
+          // 2027年二十四节气日期（简化版）
+          var solarTerms2027 = {
+            '01-05': '小寒',
+            '01-20': '大寒',
+            '02-04': '立春',
+            '02-19': '雨水',
+            '03-06': '惊蛰',
+            '03-21': '春分',
+            '04-05': '清明',
+            '04-20': '谷雨',
+            '05-06': '立夏',
+            '05-21': '小满',
+            '06-06': '芒种',
+            '06-22': '夏至',
+            '07-07': '小暑',
+            '07-23': '大暑',
+            '08-07': '立秋',
+            '08-23': '处暑',
+            '09-08': '白露',
+            '09-23': '秋分',
+            '10-08': '寒露',
+            '10-23': '霜降',
+            '11-07': '立冬',
+            '11-22': '小雪',
+            '12-07': '大雪',
+            '12-22': '冬至'
+          };
+          
+          // 2028年二十四节气日期（简化版）
+          var solarTerms2028 = {
+            '01-06': '小寒',
+            '01-20': '大寒',
+            '02-04': '立春',
+            '02-19': '雨水',
+            '03-05': '惊蛰',
+            '03-20': '春分',
+            '04-04': '清明',
+            '04-19': '谷雨',
+            '05-05': '立夏',
+            '05-21': '小满',
+            '06-05': '芒种',
+            '06-21': '夏至',
+            '07-07': '小暑',
+            '07-23': '大暑',
+            '08-07': '立秋',
+            '08-23': '处暑',
+            '09-07': '白露',
+            '09-23': '秋分',
+            '10-08': '寒露',
+            '10-23': '霜降',
+            '11-07': '立冬',
+            '11-22': '小雪',
+            '12-07': '大雪',
+            '12-21': '冬至'
+          };
+          
+          // 2029年二十四节气日期（简化版）
+          var solarTerms2029 = {
+            '01-05': '小寒',
+            '01-20': '大寒',
+            '02-04': '立春',
+            '02-18': '雨水',
+            '03-05': '惊蛰',
+            '03-20': '春分',
+            '04-04': '清明',
+            '04-20': '谷雨',
+            '05-05': '立夏',
+            '05-21': '小满',
+            '06-05': '芒种',
+            '06-21': '夏至',
+            '07-07': '小暑',
+            '07-23': '大暑',
+            '08-07': '立秋',
+            '08-23': '处暑',
+            '09-07': '白露',
+            '09-23': '秋分',
+            '10-08': '寒露',
+            '10-23': '霜降',
+            '11-07': '立冬',
+            '11-22': '小雪',
+            '12-07': '大雪',
+            '12-22': '冬至'
+          };
+          
+          // 2030年二十四节气日期（简化版）
+          var solarTerms2030 = {
+            '01-05': '小寒',
+            '01-20': '大寒',
+            '02-04': '立春',
+            '02-19': '雨水',
+            '03-05': '惊蛰',
+            '03-21': '春分',
+            '04-05': '清明',
+            '04-20': '谷雨',
+            '05-06': '立夏',
+            '05-21': '小满',
+            '06-05': '芒种',
+            '06-21': '夏至',
+            '07-07': '小暑',
+            '07-23': '大暑',
+            '08-07': '立秋',
+            '08-23': '处暑',
+            '09-08': '白露',
+            '09-23': '秋分',
+            '10-08': '寒露',
+            '10-23': '霜降',
+            '11-07': '立冬',
+            '11-22': '小雪',
+            '12-07': '大雪',
+            '12-22': '冬至'
+          };
+          
+          // 2031-2036年的二十四节气日期可以根据需要添加
+          
+          var solarTerms;
+          switch (year) {
+            case 2026:
+              solarTerms = solarTerms2026;
+              break;
+            case 2027:
+              solarTerms = solarTerms2027;
+              break;
+            case 2028:
+              solarTerms = solarTerms2028;
+              break;
+            case 2029:
+              solarTerms = solarTerms2029;
+              break;
+            case 2030:
+              solarTerms = solarTerms2030;
+              break;
+            default:
+              return null;
+          }
+          
+          // 手动补零，避免使用ES6的padStart方法
+          var monthStr = month < 10 ? '0' + month : month.toString();
+          var dayStr = day < 10 ? '0' + day : day.toString();
+          var dateKey = monthStr + '-' + dayStr;
+          return solarTerms[dateKey] || null;
+        }
+
+        // 检查特定日期是否已经有指定客户的排期
+        function hasCustomerScheduleOnDate(customerIndex, dateStr, existingSchedules) {
+            return existingSchedules.some(schedule => {
+                return schedule.customerIndex === parseInt(customerIndex) && schedule.date === dateStr;
+            });
+        }
+
+        // 获取客户在特定日期的排期时间
+        function getCustomerScheduleTimeOnDate(customerIndex, dateStr, existingSchedules) {
+            const schedule = existingSchedules.find(schedule => {
+                return schedule.customerIndex === parseInt(customerIndex) && schedule.date === dateStr;
+            });
+            return schedule ? schedule.time : null;
+        }
+
+        // 查找可用的排期时间
+        function findAvailableTime(dateStr, existingSchedules, setting) {
+            // 生成所有可能的时间段，考虑服务时间
+            const allTimeSlots = [];
+            
+            // 服务时间（分钟）
+            const serviceTime = setting.serviceTime || 60;
+            
+            // 上午工作时间
+            const morningStart = setting.morningStart || '09:30';
+            const morningEnd = setting.morningEnd || '10:30';
+            
+            // 下午工作时间
+            const afternoonStart = setting.afternoonStart || '15:30';
+            const afternoonEnd = setting.afternoonEnd || '17:30';
+            
+            // 晚上工作时间
+            const nightStart = setting.nightStart || '19:30';
+            const nightEnd = setting.nightEnd || '21:30';
+            
+            // 解析时间函数
+            function parseTime(timeStr) {
+                const [hour, minute] = timeStr.split(':').map(Number);
+                return hour * 60 + minute;
+            }
+            
+            // 格式化时间函数
+            function formatTime(totalMinutes) {
+                const hour = Math.floor(totalMinutes / 60);
+                const minute = totalMinutes % 60;
+                return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+            }
+            
+            // 生成上午时间段
+            const morningStartMinutes = parseTime(morningStart);
+            const morningEndMinutes = parseTime(morningEnd);
+            let currentMinutes = morningStartMinutes;
+            while (currentMinutes <= morningEndMinutes) {
+                allTimeSlots.push(formatTime(currentMinutes));
+                currentMinutes += serviceTime;
+                if (currentMinutes > morningEndMinutes) break;
+            }
+            
+            // 生成下午时间段
+            const afternoonStartMinutes = parseTime(afternoonStart);
+            const afternoonEndMinutes = parseTime(afternoonEnd);
+            currentMinutes = afternoonStartMinutes;
+            while (currentMinutes <= afternoonEndMinutes) {
+                allTimeSlots.push(formatTime(currentMinutes));
+                currentMinutes += serviceTime;
+                if (currentMinutes > afternoonEndMinutes) break;
+            }
+            
+            // 生成晚上时间段（如果开启）
+            if (setting.nightOpen !== false) {
+                const nightStartMinutes = parseTime(nightStart);
+                const nightEndMinutes = parseTime(nightEnd);
+                currentMinutes = nightStartMinutes;
+                while (currentMinutes <= nightEndMinutes) {
+                    allTimeSlots.push(formatTime(currentMinutes));
+                    currentMinutes += serviceTime;
+                    if (currentMinutes > nightEndMinutes) break;
+                }
+            }
+            
+            // 检查已有的排期，排除被占用的时间段
+            const occupiedTimes = [];
+            existingSchedules.forEach(schedule => {
+                if (schedule.date === dateStr) {
+                    occupiedTimes.push(schedule.time);
+                }
+            });
+            
+            // 找到第一个可用的时间段
+            for (let i = 0; i < allTimeSlots.length; i++) {
+                const timeSlot = allTimeSlots[i];
+                if (!occupiedTimes.includes(timeSlot)) {
+                    return timeSlot;
+                }
+            }
+            
+            // 当天没有可用时间
+            return null;
+        }
+
+        // 全局变量
+        var currentOperateId = '';
+        var batchPreviewData = [];
+        var modalCallBack = null;
+        
+        // 性能优化：缓存DOM元素
+        var domCache = {};
+        
+        // 性能优化：获取DOM元素（带缓存）
+        function getElement(id) {
+            if (!domCache[id]) {
+                domCache[id] = document.getElementById(id);
+            }
+            return domCache[id];
+        }
+        
+        // 性能优化：防抖函数
+        function debounce(func, wait) {
+            var timeout;
+            return function() {
+                var context = this;
+                var args = arguments;
+                clearTimeout(timeout);
+                timeout = setTimeout(function() {
+                    func.apply(context, args);
+                }, wait);
+            };
+        }
+        
+        // 性能优化：节流函数
+        function throttle(func, limit) {
+            var inThrottle;
+            return function() {
+                var args = arguments;
+                var context = this;
+                if (!inThrottle) {
+                    func.apply(context, args);
+                    inThrottle = true;
+                    setTimeout(function() {
+                        inThrottle = false;
+                    }, limit);
+                }
+            };
+        }
+
+        // 简单的Tab切换功能
+        function switchToPage(pageId, element) {
+            try {
+                // 移除所有tab的active类
+                var tabs = document.getElementsByClassName('tab-item');
+                for (var i = 0; i < tabs.length; i++) {
+                    tabs[i].className = tabs[i].className.replace(/\bactive\b/g, '').trim();
+                }
+                
+                // 给当前点击的tab添加active类
+                if (element) {
+                    element.className += ' active';
+                }
+                
+                // 隐藏所有页面
+                var pages = document.getElementsByClassName('page');
+                for (var i = 0; i < pages.length; i++) {
+                    pages[i].className = pages[i].className.replace(/\bactive\b/g, '').trim();
+                }
+                
+                // 显示目标页面
+                var targetPage = getElement(pageId);
+                if (targetPage) {
+                    targetPage.className += ' active';
+                }
+                
+                // 切换到对应页面刷新数据
+                if (pageId === 'page-customer') {
+                    try {
+                        loadProjectList();
+                    } catch (e) {
+                    }
+                    try {
+                        loadCustomerList();
+                    } catch (e) {
+                    }
+                } else if (pageId === 'page-schedule') {
+                    try {
+                        loadCustomerToQuery();
+                    } catch (e) {
+                    }
+                    try {
+                        querySchedule();
+                    } catch (e) {
+                    }
+                } else if (pageId === 'page-schedule-view') {
+                    try {
+                        initCalendar();
+                    } catch (e) {
+                    }
+                } else if (pageId === 'page-add-schedule') {
+                    try {
+                        loadProjectList();
+                    } catch (e) {
+                    }
+                    try {
+                        loadCustomerToSelect();
+                    } catch (e) {
+                    }
+                } else if (pageId === 'page-setting') {
+                    try {
+                        loadSetting();
+                        loadHolidayList();
+                    } catch (e) {
+                    }
+                }
+            } catch (e) {
+            }
+        }
+
+        // 页面初始化
+        window.onload = function() {
+            try {
+                // 初始化localStorage（防止首次使用数据为空）
+                initLocalStorage();
+                // 初始化查询日期为今天
+                try {
+                    var queryDateEl = getElement('query-date');
+                    if (queryDateEl) queryDateEl.value = getTodayDate();
+                    var singleDateEl = getElement('single-date');
+                    if (singleDateEl) singleDateEl.value = getTodayDate();
+                    var batchStartDateEl = getElement('batch-start-date');
+                    if (batchStartDateEl) batchStartDateEl.value = getTodayDate();
+                } catch (e) {
+                    console.error('初始化日期失败:', e);
+                }
+                // 绑定查询类型切换
+                try {
+                    var queryTypeSelect = getElement('schedule-query-type');
+                    if (queryTypeSelect) {
+                        if (queryTypeSelect.addEventListener) {
+                            queryTypeSelect.addEventListener('change', switchQueryType);
+                        } else if (queryTypeSelect.attachEvent) {
+                            queryTypeSelect.attachEvent('onchange', switchQueryType);
+                        }
+                    }
+                } catch (e) {
+                    console.error('绑定查询类型切换失败:', e);
+                }
+                // 绑定晚上工作时间开关
+                try {
+                    var nightTimeSwitch = getElement('work-time-night-open');
+                    if (nightTimeSwitch) {
+                        if (nightTimeSwitch.addEventListener) {
+                            nightTimeSwitch.addEventListener('change', switchNightTime);
+                        } else if (nightTimeSwitch.attachEvent) {
+                            nightTimeSwitch.attachEvent('onchange', switchNightTime);
+                        }
+                    }
+                } catch (e) {
+                    console.error('绑定晚上工作时间开关失败:', e);
+                }
+                // 绑定客户搜索事件
+                try {
+                    // 排期查询页面的客户搜索
+                    var queryCustomerSearch = getElement('query-customer-search');
+                    if (queryCustomerSearch) {
+                        if (queryCustomerSearch.addEventListener) {
+                            queryCustomerSearch.addEventListener('input', function() {
+                                loadCustomerToQuery(this.value);
+                            });
+                        } else if (queryCustomerSearch.attachEvent) {
+                            queryCustomerSearch.attachEvent('oninput', function() {
+                                loadCustomerToQuery(this.value);
+                            });
+                        }
+                    }
+                    // 单次排期页面的客户搜索
+                    var singleCustomerSearch = getElement('single-customer-search');
+                    if (singleCustomerSearch) {
+                        if (singleCustomerSearch.addEventListener) {
+                            singleCustomerSearch.addEventListener('input', function() {
+                                loadCustomerToSelect(this.value);
+                            });
+                        } else if (singleCustomerSearch.attachEvent) {
+                            singleCustomerSearch.attachEvent('oninput', function() {
+                                loadCustomerToSelect(this.value);
+                            });
+                        }
+                    }
+                    // 批量排期页面的客户搜索
+                    var batchCustomerSearch = getElement('batch-customer-search');
+                    if (batchCustomerSearch) {
+                        if (batchCustomerSearch.addEventListener) {
+                            batchCustomerSearch.addEventListener('input', function() {
+                                loadCustomerToSelect(this.value);
+                            });
+                        } else if (batchCustomerSearch.attachEvent) {
+                            batchCustomerSearch.attachEvent('oninput', function() {
+                                loadCustomerToSelect(this.value);
+                            });
+                        }
+                    }
+                    // 批量排期疗程模式切换
+                    var batchCourseType = getElement('batch-course-type');
+                    if (batchCourseType) {
+                        if (batchCourseType.addEventListener) {
+                            batchCourseType.addEventListener('change', function() {
+                                var courseType = this.value;
+                                if (courseType === 'base') {
+                                    getElement('batch-project-base').style.display = 'block';
+                                    getElement('batch-project-enhance').style.display = 'none';
+                                    getElement('batch-project-enhance-after').style.display = 'none';
+                                } else {
+                                    getElement('batch-project-base').style.display = 'none';
+                                    getElement('batch-project-enhance').style.display = 'block';
+                                    getElement('batch-project-enhance-after').style.display = 'block';
+                                }
+                            });
+                        } else if (batchCourseType.attachEvent) {
+                            batchCourseType.attachEvent('onchange', function() {
+                                var courseType = this.value;
+                                if (courseType === 'base') {
+                                    getElement('batch-project-base').style.display = 'block';
+                                    getElement('batch-project-enhance').style.display = 'none';
+                                    getElement('batch-project-enhance-after').style.display = 'none';
+                                } else {
+                                    getElement('batch-project-base').style.display = 'none';
+                                    getElement('batch-project-enhance').style.display = 'block';
+                                    getElement('batch-project-enhance-after').style.display = 'block';
+                                }
+                            });
+                        }
+                    }
+                } catch (e) {
+                    console.error('绑定事件失败:', e);
+                }
+                // 初始查询排期
+                try {
+                    // 检查当前激活的页面
+                    var activePage = document.querySelector('.page.active');
+                    if (activePage && activePage.id === 'page-schedule-view') {
+                        initCalendar();
+                    } else {
+                        querySchedule();
+                    }
+                } catch (e) {
+                    console.error('初始查询排期失败:', e);
+                }
+            } catch (e) {
+                console.error('初始化失败:', e);
+            }
+        };
+
+        // 初始化localStorage默认数据
+        function initLocalStorage() {
+            // 初始化系统设置
+            if (!localStorage.getItem('systemSetting')) {
+                localStorage.setItem('systemSetting', JSON.stringify({
+                    morningStart: '09:30',
+                    morningEnd: '12:30',
+                    afternoonStart: '15:30',
+                    afternoonEnd: '18:30',
+                    nightOpen: true,
+                    nightStart: '19:30',
+                    nightEnd: '21:30',
+                    serviceTime: 60,
+                    baseCourseNum: 6,
+                    baseCourseDay: 3,
+                    enhancePre2: 3,
+                    enhancePre3: 3,
+                    enhancePre4: 3,
+                    enhancePre5: 5,
+                    enhancePre6: 6,
+                    enhancePre7: 7,
+                    enhanceAfter1: 3,
+                    enhanceAfter2: 3,
+                    enhanceAfter3: 4,
+                    restSet: [0]
+                }));
+            }
+            
+            // 初始化空数组（防止JSON.parse报错）
+            ['projectList', 'holidayList', 'customerList', 'scheduleList', 'currentQuerySchedule'].forEach(function(key) {
+                if (!localStorage.getItem(key)) {
+                    localStorage.setItem(key, JSON.stringify([]));
+                }
+            });
+        }
+
+        // 切换查询类型
+        function switchQueryType() {
+            var type = getElement('schedule-query-type').value;
+            if (type === 'date') {
+                getElement('query-date-box').style.display = 'block';
+                getElement('query-customer-box').style.display = 'none';
+            } else {
+                getElement('query-date-box').style.display = 'none';
+                getElement('query-customer-box').style.display = 'block';
+                loadCustomerToQuery();
+            }
+        }
+
+        // 切换晚上工作时间
+        function switchNightTime() {
+            var isOpen = getElement('work-time-night-open').checked;
+            getElement('night-time-box').style.display = isOpen ? 'flex' : 'none';
+        }
+
+        // 获取今天日期（YYYY-MM-DD）
+        function getTodayDate() {
+            var today = new Date();
+            var year = today.getFullYear();
+            var month = today.getMonth() + 1;
+            var day = today.getDate();
+            
+            // 手动补零
+            if (month < 10) month = '0' + month;
+            if (day < 10) day = '0' + day;
+            
+            return year + '-' + month + '-' + day;
+        }
+
+        // 加载系统设置
+        function loadSetting() {
+            try {
+                var setting = JSON.parse(localStorage.getItem('systemSetting') || '{}');
+                // 工作时间设置
+                var workTimeMorningStart = getElement('work-time-morning-start');
+                if (workTimeMorningStart) workTimeMorningStart.value = setting.morningStart || '09:30';
+                var workTimeMorningEnd = getElement('work-time-morning-end');
+                if (workTimeMorningEnd) workTimeMorningEnd.value = setting.morningEnd || '12:30';
+                var workTimeAfternoonStart = getElement('work-time-afternoon-start');
+                if (workTimeAfternoonStart) workTimeAfternoonStart.value = setting.afternoonStart || '15:30';
+                var workTimeAfternoonEnd = getElement('work-time-afternoon-end');
+                if (workTimeAfternoonEnd) workTimeAfternoonEnd.value = setting.afternoonEnd || '18:30';
+                var workTimeNightOpen = getElement('work-time-night-open');
+                if (workTimeNightOpen) workTimeNightOpen.checked = setting.nightOpen !== false;
+                var workTimeNightStart = getElement('work-time-night-start');
+                if (workTimeNightStart) workTimeNightStart.value = setting.nightStart || '19:30';
+                var workTimeNightEnd = getElement('work-time-night-end');
+                if (workTimeNightEnd) workTimeNightEnd.value = setting.nightEnd || '21:30';
+                // 服务时间
+                var serviceTime = getElement('service-time');
+                if (serviceTime) serviceTime.value = setting.serviceTime || 60;
+                // 基础疗程参数
+                var baseCourseNum = getElement('base-course-num');
+                if (baseCourseNum) baseCourseNum.value = setting.baseCourseNum || 6;
+                var baseCourseDay = getElement('base-course-day');
+                if (baseCourseDay) baseCourseDay.value = setting.baseCourseDay || 3;
+                // 加强疗程参数
+                var enhancePre2 = getElement('enhance-pre2');
+                if (enhancePre2) enhancePre2.value = setting.enhancePre2 || 3;
+                var enhancePre3 = getElement('enhance-pre3');
+                if (enhancePre3) enhancePre3.value = setting.enhancePre3 || 3;
+                var enhancePre4 = getElement('enhance-pre4');
+                if (enhancePre4) enhancePre4.value = setting.enhancePre4 || 3;
+                var enhancePre5 = getElement('enhance-pre5');
+                if (enhancePre5) enhancePre5.value = setting.enhancePre5 || 5;
+                var enhancePre6 = getElement('enhance-pre6');
+                if (enhancePre6) enhancePre6.value = setting.enhancePre6 || 6;
+                var enhancePre7 = getElement('enhance-pre7');
+                if (enhancePre7) enhancePre7.value = setting.enhancePre7 || 7;
+                var enhanceAfter1 = getElement('enhance-after1');
+                if (enhanceAfter1) enhanceAfter1.value = setting.enhanceAfter1 || 3;
+                var enhanceAfter2 = getElement('enhance-after2');
+                if (enhanceAfter2) enhanceAfter2.value = setting.enhanceAfter2 || 3;
+                var enhanceAfter3 = getElement('enhance-after3');
+                if (enhanceAfter3) enhanceAfter3.value = setting.enhanceAfter3 || 4;
+                
+                // 休息日设置
+                var restSet = setting.restSet || [0];
+                var restSun = getElement('rest-sun');
+                if (restSun) restSun.checked = restSet.indexOf(0) !== -1;
+                var restMon = getElement('rest-mon');
+                if (restMon) restMon.checked = restSet.indexOf(1) !== -1;
+                var restTue = getElement('rest-tue');
+                if (restTue) restTue.checked = restSet.indexOf(2) !== -1;
+                var restWed = getElement('rest-wed');
+                if (restWed) restWed.checked = restSet.indexOf(3) !== -1;
+                var restThu = getElement('rest-thu');
+                if (restThu) restThu.checked = restSet.indexOf(4) !== -1;
+                var restFri = getElement('rest-fri');
+                if (restFri) restFri.checked = restSet.indexOf(5) !== -1;
+                var restSat = getElement('rest-sat');
+                if (restSat) restSat.checked = restSet.indexOf(6) !== -1;
+                
+                // 初始化晚上时间显示状态
+                switchNightTime();
+            } catch (e) {
+                console.error('加载设置失败:', e);
+            }
+        }
+
+        // 保存系统设置
+        function saveSetting() {
+            try {
+                // 收集休息日设置
+                var restSet = [];
+                var restSun = getElement('rest-sun');
+                if (restSun && restSun.checked) restSet.push(0);
+                var restMon = getElement('rest-mon');
+                if (restMon && restMon.checked) restSet.push(1);
+                var restTue = getElement('rest-tue');
+                if (restTue && restTue.checked) restSet.push(2);
+                var restWed = getElement('rest-wed');
+                if (restWed && restWed.checked) restSet.push(3);
+                var restThu = getElement('rest-thu');
+                if (restThu && restThu.checked) restSet.push(4);
+                var restFri = getElement('rest-fri');
+                if (restFri && restFri.checked) restSet.push(5);
+                var restSat = getElement('rest-sat');
+                if (restSat && restSat.checked) restSet.push(6);
+                
+                var setting = {
+                    morningStart: getElement('work-time-morning-start').value,
+                    morningEnd: getElement('work-time-morning-end').value,
+                    afternoonStart: getElement('work-time-afternoon-start').value,
+                    afternoonEnd: getElement('work-time-afternoon-end').value,
+                    nightOpen: getElement('work-time-night-open').checked,
+                    nightStart: getElement('work-time-night-start').value,
+                    nightEnd: getElement('work-time-night-end').value,
+                    serviceTime: parseInt(getElement('service-time').value) || 60,
+                    baseCourseNum: parseInt(getElement('base-course-num').value) || 6,
+                    baseCourseDay: parseInt(getElement('base-course-day').value) || 3,
+                    enhancePre2: parseInt(getElement('enhance-pre2').value) || 3,
+                    enhancePre3: parseInt(getElement('enhance-pre3').value) || 3,
+                    enhancePre4: parseInt(getElement('enhance-pre4').value) || 3,
+                    enhancePre5: parseInt(getElement('enhance-pre5').value) || 5,
+                    enhancePre6: parseInt(getElement('enhance-pre6').value) || 6,
+                    enhancePre7: parseInt(getElement('enhance-pre7').value) || 7,
+                    enhanceAfter1: parseInt(getElement('enhance-after1').value) || 3,
+                    enhanceAfter2: parseInt(getElement('enhance-after2').value) || 3,
+                    enhanceAfter3: parseInt(getElement('enhance-after3').value) || 4,
+                    restSet: restSet
+                };
+                
+                localStorage.setItem('systemSetting', JSON.stringify(setting));
+                alert('系统设置保存成功！');
+            } catch (e) {
+                console.error('保存设置失败:', e);
+                alert('保存系统设置失败，请重试！');
+            }
+        }
+
+        // 导出所有数据
+        function exportData() {
+            try {
+                var data = {
+                    systemSetting: localStorage.getItem('systemSetting'),
+                    projectList: localStorage.getItem('projectList'),
+                    holidayList: localStorage.getItem('holidayList'),
+                    customerList: localStorage.getItem('customerList'),
+                    scheduleList: localStorage.getItem('scheduleList'),
+                    exportDate: new Date().toISOString()
+                };
+                
+                var dataStr = JSON.stringify(data, null, 2);
+                var dataBlob = new Blob([dataStr], {type: 'application/json'});
+                var url = URL.createObjectURL(dataBlob);
+                var link = document.createElement('a');
+                link.href = url;
+                link.download = '宫诚阁客户排期管理系统数据_' + new Date().toISOString().slice(0, 10) + '.json';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+                
+                alert('数据导出成功！');
+            } catch (e) {
+                console.error('导出数据失败:', e);
+                alert('导出数据失败，请重试！');
+            }
+        }
+
+        // 导入数据
+        function importData() {
+            var input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = function(e) {
+                var file = e.target.files[0];
+                if (!file) return;
+                
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        var data = JSON.parse(e.target.result);
+                        
+                        // 验证数据格式
+                        if (!data.systemSetting || !data.projectList || !data.customerList || !data.scheduleList) {
+                            alert('导入失败：数据格式不正确！');
+                            return;
+                        }
+                        
+                        if (!confirm('确定要导入数据吗？这将覆盖现有数据！')) {
+                            return;
+                        }
+                        
+                        // 导入数据
+                        localStorage.setItem('systemSetting', data.systemSetting);
+                        localStorage.setItem('projectList', data.projectList);
+                        localStorage.setItem('holidayList', data.holidayList || '[]');
+                        localStorage.setItem('customerList', data.customerList);
+                        localStorage.setItem('scheduleList', data.scheduleList);
+                        
+                        alert('数据导入成功！系统将刷新页面。');
+                        location.reload();
+                    } catch (e) {
+                        console.error('导入数据失败:', e);
+                        alert('导入数据失败：' + e.message);
+                    }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        }
+
+        // 备份数据
+        function backupData() {
+            try {
+                var data = {
+                    systemSetting: localStorage.getItem('systemSetting'),
+                    projectList: localStorage.getItem('projectList'),
+                    holidayList: localStorage.getItem('holidayList'),
+                    customerList: localStorage.getItem('customerList'),
+                    scheduleList: localStorage.getItem('scheduleList'),
+                    backupDate: new Date().toISOString()
+                };
+                
+                localStorage.setItem('backupData', JSON.stringify(data));
+                alert('数据备份成功！');
+            } catch (e) {
+                console.error('备份数据失败:', e);
+                alert('备份数据失败，请重试！');
+            }
+        }
+
+        // 恢复数据
+        function restoreData() {
+            try {
+                var backupData = localStorage.getItem('backupData');
+                if (!backupData) {
+                    alert('没有找到备份数据！');
+                    return;
+                }
+                
+                if (!confirm('确定要恢复备份数据吗？这将覆盖现有数据！')) {
+                    return;
+                }
+                
+                var data = JSON.parse(backupData);
+                localStorage.setItem('systemSetting', data.systemSetting);
+                localStorage.setItem('projectList', data.projectList);
+                localStorage.setItem('holidayList', data.holidayList || '[]');
+                localStorage.setItem('customerList', data.customerList);
+                localStorage.setItem('scheduleList', data.scheduleList);
+                
+                alert('数据恢复成功！系统将刷新页面。');
+                location.reload();
+            } catch (e) {
+                console.error('恢复数据失败:', e);
+                alert('恢复数据失败：' + e.message);
+            }
+        }
+
+        // 加载调理项目列表
+        function loadProjectList() {
+            try {
+                var projectList = JSON.parse(localStorage.getItem('projectList') || '[]');
+                var projectListEl = document.getElementById('project-list');
+                var custProjectEl = document.getElementById('cust-project');
+                var singleProjectEl = document.getElementById('single-project');
+                var batchProjectEl = document.getElementById('batch-project');
+                var batchProjectPre7El = document.getElementById('batch-project-pre7');
+                var batchProjectAfter3El = document.getElementById('batch-project-after3');
+                
+                // 确保DOM元素存在
+                if (!projectListEl || !custProjectEl || !singleProjectEl || !batchProjectEl) {
+                    console.error('项目相关DOM元素未找到');
+                    return;
+                }
+                
+                // 清空现有选项
+                custProjectEl.innerHTML = '<option value="">请选择调理项目</option>';
+                singleProjectEl.innerHTML = '<option value="">请选择调理项目</option>';
+                batchProjectEl.innerHTML = '<option value="">请选择调理项目</option>';
+                if (batchProjectPre7El) {
+                    batchProjectPre7El.innerHTML = '<option value="">请选择调理项目</option>';
+                }
+                if (batchProjectAfter3El) {
+                    batchProjectAfter3El.innerHTML = '<option value="">请选择调理项目</option>';
+                }
+                
+                if (projectList.length === 0) {
+                    projectListEl.innerHTML = '<div class="empty-tip">暂无调理项目，请先添加</div>';
+                    return;
+                }
+                
+                // 渲染项目列表
+                var html = '';
+                projectList.forEach(function(item, index) {
+                    html += '<div class="list-item">' +
+                            '<div class="list-item-info">' + item.name + '</div>' +
+                            '<div class="list-item-opt">' +
+                            '<button class="opt-btn opt-btn-del" onclick="deleteProject(' + index + ')">删除</button>' +
+                            '</div>' +
+                            '</div>';
+                    // 添加到选择框
+                    var option = document.createElement('option');
+                    option.value = item.name;
+                    option.textContent = item.name;
+                    custProjectEl.appendChild(option.cloneNode(true));
+                    singleProjectEl.appendChild(option.cloneNode(true));
+                    batchProjectEl.appendChild(option.cloneNode(true));
+                    if (batchProjectPre7El) {
+                        batchProjectPre7El.appendChild(option.cloneNode(true));
+                    }
+                    if (batchProjectAfter3El) {
+                        batchProjectAfter3El.appendChild(option);
+                    }
+                });
+                projectListEl.innerHTML = html;
+            } catch (e) {
+                console.error('加载项目列表失败:', e);
+                alert('加载调理项目失败，请重试！');
+            }
+        }
+
+        // 添加调理项目
+        function addProject() {
+            try {
+                var projectName = document.getElementById('project-name').value.trim();
+                if (!projectName) {
+                    alert('请输入调理项目名称！');
+                    return;
+                }
+                
+                var projectList = JSON.parse(localStorage.getItem('projectList') || '[]');
+                // 检查是否已存在
+                if (projectList.some(function(item) { return item.name === projectName; })) {
+                    alert('该调理项目已存在！');
+                    return;
+                }
+                
+                projectList.push({ name: projectName });
+                localStorage.setItem('projectList', JSON.stringify(projectList));
+                document.getElementById('project-name').value = '';
+                loadProjectList();
+                alert('调理项目添加成功！');
+            } catch (e) {
+                console.error('添加项目失败:', e);
+                alert('添加调理项目失败，请重试！');
+            }
+        }
+
+        // 删除调理项目
+        function deleteProject(index) {
+            try {
+                if (!confirm('确定要删除该调理项目吗？')) return;
+                
+                var projectList = JSON.parse(localStorage.getItem('projectList') || '[]');
+                projectList.splice(index, 1);
+                localStorage.setItem('projectList', JSON.stringify(projectList));
+                loadProjectList();
+                alert('调理项目删除成功！');
+            } catch (e) {
+                console.error('删除项目失败:', e);
+                alert('删除调理项目失败，请重试！');
+            }
+        }
+
+        // 加载节假日列表
+        function loadHolidayList() {
+            try {
+                var holidayList = JSON.parse(localStorage.getItem('holidayList') || '[]');
+                var holidayListEl = document.getElementById('holiday-list');
+                
+                if (!holidayListEl) {
+                    console.error('节假日列表DOM元素未找到');
+                    return;
+                }
+                
+                if (holidayList.length === 0) {
+                    holidayListEl.innerHTML = '<div class="empty-tip">暂无节假日，请先添加</div>';
+                    return;
+                }
+                
+                var html = '';
+                holidayList.forEach(function(item, index) {
+                    html += '<div class="list-item">' +
+                            '<div class="list-item-info">' + item.date + ' ' + (item.name || '节假日') + '</div>' +
+                            '<div class="list-item-opt">' +
+                            '<button class="opt-btn opt-btn-del" onclick="deleteHoliday(' + index + ')">删除</button>' +
+                            '</div>' +
+                            '</div>';
+                });
+                holidayListEl.innerHTML = html;
+            } catch (e) {
+                console.error('加载节假日列表失败:', e);
+                alert('加载节假日失败，请重试！');
+            }
+        }
+
+        // 添加节假日
+        function addHoliday() {
+            try {
+                var holidayDate = document.getElementById('holiday-date').value;
+                if (!holidayDate) {
+                    alert('请选择节假日日期！');
+                    return;
+                }
+                
+                var holidayList = JSON.parse(localStorage.getItem('holidayList') || '[]');
+                // 检查是否已存在
+                if (holidayList.some(function(item) { return item.date === holidayDate; })) {
+                    alert('该日期已添加为节假日！');
+                    return;
+                }
+                
+                // 获取农历信息（增加容错）
+                var lunarInfo = '';
+                try {
+                    var dateArr = holidayDate.split('-');
+                    var lunar = solarToLunar(parseInt(dateArr[0]), parseInt(dateArr[1]), parseInt(dateArr[2]));
+                    if (lunar) {
+                        lunarInfo = '(' + lunar.lunarMonth + lunar.lunarDay + ')';
+                    } else {
+                        lunarInfo = '农历转换失败';
+                    }
+                } catch (e) {
+                    lunarInfo = '农历转换失败';
+                }
+                
+                // 检查是否为二十四节气
+                var solarTerms = getSolarTerm(parseInt(dateArr[0]), parseInt(dateArr[1]), parseInt(dateArr[2]));
+                if (solarTerms) {
+                    lunarInfo += ' ' + solarTerms;
+                }
+                
+                holidayList.push({
+                    date: holidayDate,
+                    name: lunarInfo
+                });
+                localStorage.setItem('holidayList', JSON.stringify(holidayList));
+                document.getElementById('holiday-date').value = '';
+                loadHolidayList();
+                alert('节假日添加成功！');
+            } catch (e) {
+                console.error('添加节假日失败:', e);
+                alert('添加节假日失败，请重试！');
+            }
+        }
+
+        // 删除节假日
+        function deleteHoliday(index) {
+            try {
+                if (!confirm('确定要删除该节假日吗？')) return;
+                
+                var holidayList = JSON.parse(localStorage.getItem('holidayList') || '[]');
+                holidayList.splice(index, 1);
+                localStorage.setItem('holidayList', JSON.stringify(holidayList));
+                loadHolidayList();
+                alert('节假日删除成功！');
+            } catch (e) {
+                console.error('删除节假日失败:', e);
+                alert('删除节假日失败，请重试！');
+            }
+        }
+
+        // 加载客户列表
+        function loadCustomerList() {
+            try {
+                var customerList = JSON.parse(localStorage.getItem('customerList') || '[]');
+                var customerListEl = document.getElementById('customer-list');
+                
+                if (!customerListEl) {
+                    console.error('客户列表DOM元素未找到');
+                    return;
+                }
+                
+                if (customerList.length === 0) {
+                    customerListEl.innerHTML = '<div class="empty-tip">暂无客户数据，请先添加</div>';
+                    return;
+                }
+                
+                var html = '';
+                customerList.forEach(function(item, index) {
+                    html += '<div class="list-item">' +
+                            '<div class="list-item-info">' +
+                            '<div><strong>' + item.name + '</strong>（' + item.sex + '）</div>' +
+                            '<div>手机号：' + item.phone + '</div>' +
+                            '<div>调理项目：' + (item.project || '未设置') + '</div>' +
+                            '<div>完成疗程：' + (item.courseNum || 0) + '次</div>' +
+                            '<div>备注：' + (item.remark || '无') + '</div>' +
+                            '</div>' +
+                            '<div class="list-item-opt">' +
+                            '<button class="opt-btn opt-btn-edit" onclick="editCustomer(' + index + ')">编辑</button>' +
+                            '<button class="opt-btn opt-btn-del" onclick="deleteCustomer(' + index + ')">删除</button>' +
+                            '</div>' +
+                            '</div>';
+                });
+                customerListEl.innerHTML = html;
+            } catch (e) {
+                console.error('加载客户列表失败:', e);
+                alert('加载客户数据失败，请重试！');
+            }
+        }
+
+        // 加载客户到排期选择框
+        function loadCustomerToSelect(searchText) {
+            try {
+                var customerList = JSON.parse(localStorage.getItem('customerList') || '[]');
+                var singleCustomerEl = document.getElementById('single-customer');
+                var batchCustomerEl = document.getElementById('batch-customer');
+                
+                if (!singleCustomerEl || !batchCustomerEl) {
+                    console.error('客户选择框DOM元素未找到');
+                    return;
+                }
+                
+                // 清空现有选项
+                singleCustomerEl.innerHTML = '<option value="">请选择客户</option>';
+                batchCustomerEl.innerHTML = '<option value="">请选择客户</option>';
+                
+                if (customerList.length === 0) return;
+                
+                // 过滤客户
+                var filteredCustomers = customerList;
+                if (searchText) {
+                    var searchLower = searchText.toLowerCase();
+                    filteredCustomers = customerList.filter(function(item) {
+                        return item.name.toLowerCase().includes(searchLower) || item.phone.includes(searchLower);
+                    });
+                }
+                
+                // 添加到选择框
+                filteredCustomers.forEach(function(item, index) {
+                    var originalIndex = customerList.indexOf(item);
+                    var option = document.createElement('option');
+                    option.value = originalIndex;
+                    option.textContent = item.name + '（' + item.phone + '）';
+                    singleCustomerEl.appendChild(option.cloneNode(true));
+                    batchCustomerEl.appendChild(option);
+                });
+            } catch (e) {
+                console.error('加载客户选择框失败:', e);
+            }
+        }
+
+        // 加载客户到查询选择框
+        function loadCustomerToQuery(searchText) {
+            try {
+                var customerList = JSON.parse(localStorage.getItem('customerList') || '[]');
+                var queryCustomerEl = document.getElementById('query-customer');
+                
+                if (!queryCustomerEl) {
+                    console.error('查询客户选择框DOM元素未找到');
+                    return;
+                }
+                
+                // 清空现有选项
+                queryCustomerEl.innerHTML = '<option value="">请选择客户</option>';
+                
+                if (customerList.length === 0) return;
+                
+                // 过滤客户
+                var filteredCustomers = customerList;
+                if (searchText) {
+                    var searchLower = searchText.toLowerCase();
+                    filteredCustomers = customerList.filter(function(item) {
+                        return item.name.toLowerCase().includes(searchLower) || item.phone.includes(searchLower);
+                    });
+                }
+                
+                // 添加到选择框
+                filteredCustomers.forEach(function(item, index) {
+                    var originalIndex = customerList.indexOf(item);
+                    var option = document.createElement('option');
+                    option.value = originalIndex;
+                    option.textContent = item.name + '（' + item.phone + '）';
+                    queryCustomerEl.appendChild(option);
+                });
+            } catch (e) {
+                console.error('加载查询客户选择框失败:', e);
+            }
+        }
+
+        // 添加/编辑客户
+        function addCustomer() {
+            try {
+                var custId = document.getElementById('cust-id').value;
+                var name = document.getElementById('cust-name').value.trim();
+                var sex = document.getElementById('cust-sex').value;
+                var phone = document.getElementById('cust-phone').value.trim();
+                var project = document.getElementById('cust-project').value;
+                var courseNum = parseInt(document.getElementById('cust-course-num').value) || 0;
+                var remark = document.getElementById('cust-remark').value.trim();
+                
+                // 验证
+                if (!name) {
+                    alert('请输入客户姓名！');
+                    return;
+                }
+                if (!phone || !/^1[3-9]\d{9}$/.test(phone)) {
+                    alert('请输入有效的手机号！');
+                    return;
+                }
+                if (!project) {
+                    alert('请选择调理项目！');
+                    return;
+                }
+                
+                var customerList = JSON.parse(localStorage.getItem('customerList') || '[]');
+                var customer = {
+                    name: name,
+                    sex: sex,
+                    phone: phone,
+                    project: project,
+                    courseNum: courseNum,
+                    remark: remark
+                };
+                
+                if (custId !== '') {
+                    // 编辑模式
+                    customerList[parseInt(custId)] = customer;
+                    localStorage.setItem('customerList', JSON.stringify(customerList));
+                    document.getElementById('cust-id').value = '';
+                    alert('客户信息编辑成功！');
+                } else {
+                    // 新增模式
+                    // 检查手机号是否已存在
+                    if (customerList.some(function(item) { return item.phone === phone; })) {
+                        alert('该手机号已添加过客户！');
+                        return;
+                    }
+                    customerList.push(customer);
+                    localStorage.setItem('customerList', JSON.stringify(customerList));
+                    alert('客户添加成功！');
+                }
+                
+                // 重置表单
+                document.getElementById('cust-name').value = '';
+                document.getElementById('cust-phone').value = '';
+                document.getElementById('cust-project').value = '';
+                document.getElementById('cust-course-num').value = '0';
+                document.getElementById('cust-remark').value = '';
+                document.getElementById('cust-id').value = '';
+                
+                // 更改按钮文本为"添加客户"
+                document.getElementById('add-customer-btn').textContent = '添加客户';
+                
+                // 刷新列表和选择框
+                loadCustomerList();
+                loadCustomerToSelect();
+                loadCustomerToQuery();
+            } catch (e) {
+                console.error('添加客户失败:', e);
+                alert('添加/编辑客户失败，请重试！');
+            }
+        }
+
+        // 编辑客户
+        function editCustomer(index) {
+            try {
+                var customerList = JSON.parse(localStorage.getItem('customerList') || '[]');
+                var customer = customerList[index];
+                
+                // 填充表单
+                document.getElementById('cust-id').value = index;
+                document.getElementById('cust-name').value = customer.name;
+                document.getElementById('cust-sex').value = customer.sex;
+                document.getElementById('cust-phone').value = customer.phone;
+                document.getElementById('cust-project').value = customer.project;
+                document.getElementById('cust-course-num').value = customer.courseNum || 0;
+                document.getElementById('cust-remark').value = customer.remark || '';
+                
+                // 更改按钮文本为"保存修改"
+                document.getElementById('add-customer-btn').textContent = '保存修改';
+                
+                // 滚动到表单顶部
+                document.getElementById('page-customer').scrollTop = 0;
+            } catch (e) {
+                console.error('编辑客户失败:', e);
+                alert('加载客户编辑信息失败，请重试！');
+            }
+        }
+
+        // 删除客户
+        function deleteCustomer(index) {
+            try {
+                if (!confirm('确定要删除该客户吗？删除后相关排期数据也会被清除！')) return;
+                
+                var customerList = JSON.parse(localStorage.getItem('customerList') || '[]');
+                customerList.splice(index, 1);
+                localStorage.setItem('customerList', JSON.stringify(customerList));
+                
+                // 删除该客户的排期
+                var scheduleList = JSON.parse(localStorage.getItem('scheduleList') || '[]');
+                scheduleList = scheduleList.filter(function(item) { return item.customerIndex !== index; });
+                localStorage.setItem('scheduleList', JSON.stringify(scheduleList));
+                
+                // 刷新列表和选择框
+                loadCustomerList();
+                loadCustomerToSelect();
+                loadCustomerToQuery();
+                querySchedule();
+                
+                alert('客户删除成功！');
+            } catch (e) {
+                console.error('删除客户失败:', e);
+                alert('删除客户失败，请重试！');
+            }
+        }
+
+        // 添加单次排期
+        function addSingleSchedule() {
+            try {
+                var customerIndex = document.getElementById('single-customer').value;
+                var date = document.getElementById('single-date').value;
+                var project = document.getElementById('single-project').value;
+                
+                // 验证
+                if (customerIndex === '') {
+                    alert('请选择客户！');
+                    return;
+                }
+                if (!date) {
+                    alert('请选择排期日期！');
+                    return;
+                }
+                if (!project) {
+                    alert('请选择调理项目！');
+                    return;
+                }
+                
+                var setting = JSON.parse(localStorage.getItem('systemSetting') || '{}');
+                var existingSchedules = JSON.parse(localStorage.getItem('scheduleList') || '[]');
+                
+                // 检查该客户当天是否已经有排期
+                if (hasCustomerScheduleOnDate(customerIndex, date, existingSchedules)) {
+                    const existingTime = getCustomerScheduleTimeOnDate(customerIndex, date, existingSchedules);
+                    alert('该客户在 ' + date + ' 已经有排期（时间：' + existingTime + '），无法重复排期！');
+                    return;
+                }
+                
+                // 查找可用的时间
+                var availableTime = findAvailableTime(date, existingSchedules, setting);
+                if (!availableTime) {
+                    // 当天没有可用时间，顺延到下一天
+                    var nextDate = new Date(date);
+                    var loopCount = 0;
+                    var maxLoop = 30; // 最多查找30天
+                    
+                    while (!availableTime && loopCount < maxLoop) {
+                        nextDate.setDate(nextDate.getDate() + 1);
+                        var nextDateStr = formatDate(nextDate);
+                        
+                        // 检查该客户当天是否已经有排期
+                        if (hasCustomerScheduleOnDate(customerIndex, nextDateStr, existingSchedules)) {
+                            loopCount++;
+                            continue;
+                        }
+                        
+                        // 检查是否是休息日
+                        if (!isRestDay(nextDateStr)) {
+                            availableTime = findAvailableTime(nextDateStr, existingSchedules, setting);
+                        }
+                        loopCount++;
+                    }
+                    
+                    if (!availableTime) {
+                        alert('未找到可用的排期时间，请调整日期或检查系统设置！');
+                        return;
+                    }
+                    
+                    // 询问用户是否使用顺延的时间
+                    if (!confirm('所选日期没有可用时间，是否使用 ' + formatDate(nextDate) + ' ' + availableTime + ' 的时间？')) {
+                        return;
+                    }
+                    
+                    date = formatDate(nextDate);
+                }
+                
+                // 检查是否是休息日
+                if (isRestDay(date)) {
+                    if (!confirm('所选日期是休息日/节假日，确定要添加排期吗？')) {
+                        return;
+                    }
+                }
+                
+                var customerList = JSON.parse(localStorage.getItem('customerList') || '[]');
+                var customer = customerList[customerIndex];
+                
+                var scheduleList = JSON.parse(localStorage.getItem('scheduleList') || '[]');
+                scheduleList.push({
+                    id: Date.now().toString(),
+                    customerIndex: parseInt(customerIndex),
+                    customerName: customer.name,
+                    customerPhone: customer.phone,
+                    date: date,
+                    time: availableTime,
+                    project: project,
+                    status: 'uncompleted', // uncompleted/completed
+                    createTime: new Date().toLocaleString(),
+                    type: 'single' // single/batch
+                });
+                
+                localStorage.setItem('scheduleList', JSON.stringify(scheduleList));
+                alert('单次排期添加成功！排期时间：' + availableTime);
+                
+                // 刷新排期列表
+                querySchedule();
+            } catch (e) {
+                console.error('添加单次排期失败:', e);
+                alert('添加单次排期失败，请重试！');
+            }
+        }
+
+        // 预览批量排期
+        function previewBatchSchedule() {
+            try {
+                var customerIndex = document.getElementById('batch-customer').value;
+                var startDate = document.getElementById('batch-start-date').value;
+                var courseType = document.getElementById('batch-course-type').value;
+                var project = document.getElementById('batch-project').value;
+                var projectPre7 = document.getElementById('batch-project-pre7').value;
+                var projectAfter3 = document.getElementById('batch-project-after3').value;
+                
+                // 验证
+                if (customerIndex === '') {
+                    alert('请选择客户！');
+                    return;
+                }
+                if (!startDate) {
+                    alert('请选择开始日期！');
+                    return;
+                }
+                if (courseType === 'base') {
+                    if (!project) {
+                        alert('请选择调理项目！');
+                        return;
+                    }
+                } else {
+                    if (!projectPre7) {
+                        alert('请选择前七主要调理项目！');
+                        return;
+                    }
+                    if (!projectAfter3) {
+                        alert('请选择后三主要调理项目！');
+                        return;
+                    }
+                }
+                
+                var setting = JSON.parse(localStorage.getItem('systemSetting') || '{}');
+                var customerList = JSON.parse(localStorage.getItem('customerList') || '[]');
+                var customer = customerList[customerIndex];
+                
+                // 获取已有的排期列表
+                var existingSchedules = JSON.parse(localStorage.getItem('scheduleList') || '[]');
+                
+                // 生成排期日期列表（增加循环保护，防止死循环）
+                var scheduleDates = [];
+                var currentDate = new Date(startDate);
+                var loopCount = 0; // 循环计数器，防止死循环
+                var maxLoop = 100; // 最大循环次数
+                
+                // 创建一个临时的排期列表，用于记录已经生成的排期
+                var tempSchedules = [...existingSchedules];
+                
+                if (courseType === 'base') {
+                    // 基础疗程
+                    var courseNum = setting.baseCourseNum || 6;
+                    var courseDay = setting.baseCourseDay || 3;
+                    
+                    for (var i = 0; i < courseNum; i++) {
+                        // 跳过休息日（增加循环保护）
+                        while (isRestDay(formatDate(currentDate)) && loopCount < maxLoop) {
+                            currentDate.setDate(currentDate.getDate() + 1);
+                            loopCount++;
+                        }
+                        if (loopCount >= maxLoop) {
+                            alert('检测到过多休息日，无法生成排期，请调整开始日期或休息日设置！');
+                            return;
+                        }
+                        
+                        // 检查该客户当天是否已经有排期
+                        while (hasCustomerScheduleOnDate(customerIndex, formatDate(currentDate), existingSchedules)) {
+                            const existingTime = getCustomerScheduleTimeOnDate(customerIndex, formatDate(currentDate), existingSchedules);
+                            if (!confirm('该客户在 ' + formatDate(currentDate) + ' 已经有排期（时间：' + existingTime + '），是否继续顺延排期？')) {
+                                alert('排期操作已取消，请重新选择开始日期！');
+                                return;
+                            }
+                            // 顺延到下一天
+                            currentDate.setDate(currentDate.getDate() + 1);
+                            // 检查顺延后的日期是否是休息日
+                            while (isRestDay(formatDate(currentDate)) && loopCount < maxLoop) {
+                                currentDate.setDate(currentDate.getDate() + 1);
+                                loopCount++;
+                            }
+                            if (loopCount >= maxLoop) {
+                                alert('检测到过多休息日，无法生成排期，请调整开始日期或休息日设置！');
+                                return;
+                            }
+                        }
+                        
+                        // 查找可用的时间
+                        var availableTime = findAvailableTime(formatDate(currentDate), tempSchedules, setting);
+                        if (!availableTime) {
+                            // 当天没有可用时间，顺延到下一天
+                            currentDate.setDate(currentDate.getDate() + 1);
+                            i--; // 重新处理当前循环
+                            loopCount = 0;
+                            continue;
+                        }
+                        
+                        scheduleDates.push({
+                            date: formatDate(currentDate),
+                            time: availableTime,
+                            index: i + 1
+                        });
+                        
+                        // 将生成的排期添加到临时列表中，避免后续排期重复使用同一时间段
+                        tempSchedules.push({
+                            date: formatDate(currentDate),
+                            time: availableTime
+                        });
+                        
+                        // 增加天数：本次日期加上设置值再加1天
+                        currentDate.setDate(currentDate.getDate() + courseDay + 1);
+                        loopCount = 0; // 重置计数器
+                    }
+                } else {
+                    // 加强疗程（前7后3）
+                    // 根据用户提供的示例模式动态计算
+                    var currentDate = new Date(startDate);
+                    var loopCount = 0;
+                    var maxLoop = 100;
+                    
+                    // 处理第一次排期（前第1次）
+                    // 跳过休息日（增加循环保护）
+                    while (isRestDay(formatDate(currentDate)) && loopCount < maxLoop) {
+                        currentDate.setDate(currentDate.getDate() + 1);
+                        loopCount++;
+                    }
+                    if (loopCount >= maxLoop) {
+                        alert('检测到过多休息日，无法生成排期，请调整开始日期或休息日设置！');
+                        return;
+                    }
+                    
+                    // 检查该客户当天是否已经有排期
+                    while (hasCustomerScheduleOnDate(customerIndex, formatDate(currentDate), existingSchedules)) {
+                        const existingTime = getCustomerScheduleTimeOnDate(customerIndex, formatDate(currentDate), existingSchedules);
+                        if (!confirm('该客户在 ' + formatDate(currentDate) + ' 已经有排期（时间：' + existingTime + '），是否继续顺延排期？')) {
+                            alert('排期操作已取消，请重新选择开始日期！');
+                            return;
+                        }
+                        // 顺延到下一天
+                        currentDate.setDate(currentDate.getDate() + 1);
+                        // 检查顺延后的日期是否是休息日
+                        loopCount = 0;
+                        while (isRestDay(formatDate(currentDate)) && loopCount < maxLoop) {
+                            currentDate.setDate(currentDate.getDate() + 1);
+                            loopCount++;
+                        }
+                        if (loopCount >= maxLoop) {
+                            alert('检测到过多休息日，无法生成排期，请调整开始日期或休息日设置！');
+                            return;
+                        }
+                    }
+                    
+                    // 查找可用的时间
+                    var availableTime = findAvailableTime(formatDate(currentDate), tempSchedules, setting);
+                    if (!availableTime) {
+                        // 当天没有可用时间，顺延到下一天
+                        currentDate.setDate(currentDate.getDate() + 1);
+                        // 重新处理第一次排期
+                        loopCount = 0;
+                        while (isRestDay(formatDate(currentDate)) && loopCount < maxLoop) {
+                            currentDate.setDate(currentDate.getDate() + 1);
+                            loopCount++;
+                        }
+                        if (loopCount >= maxLoop) {
+                            alert('检测到过多休息日，无法生成排期，请调整开始日期或休息日设置！');
+                            return;
+                        }
+                        availableTime = findAvailableTime(formatDate(currentDate), tempSchedules, setting);
+                        if (!availableTime) {
+                            alert('当天没有可用时间，请调整开始日期！');
+                            return;
+                        }
+                    }
+                    
+                    scheduleDates.push({
+                        date: formatDate(currentDate),
+                        time: availableTime,
+                        index: 1,
+                        type: 'pre'
+                    });
+                    
+                    // 将生成的排期添加到临时列表中，避免后续排期重复使用同一时间段
+                    tempSchedules.push({
+                        date: formatDate(currentDate),
+                        time: availableTime
+                    });
+                    
+                    loopCount = 0; // 重置计数器
+                    
+                    // 处理后续排期 - 按照用户指定的间隔逻辑
+                    // 存储前7次的日期，用于计算间隔
+                    var preDates = [formatDate(currentDate)];
+                    var preTimes = [availableTime]; // 存储前7次的时间
+                    
+                    // 处理前第2次
+                    var nextDate = new Date(currentDate);
+                    nextDate.setDate(nextDate.getDate() + (setting.enhancePre2 || 3) + 1);
+                    while (isRestDay(formatDate(nextDate)) && loopCount < maxLoop) {
+                        nextDate.setDate(nextDate.getDate() + 1);
+                        loopCount++;
+                    }
+                    if (loopCount >= maxLoop) {
+                        alert('检测到过多休息日，无法生成排期，请调整开始日期或休息日设置！');
+                        return;
+                    }
+                    
+                    // 检查该客户当天是否已经有排期
+                    while (hasCustomerScheduleOnDate(customerIndex, formatDate(nextDate), existingSchedules)) {
+                        const existingTime = getCustomerScheduleTimeOnDate(customerIndex, formatDate(nextDate), existingSchedules);
+                        if (!confirm('该客户在 ' + formatDate(nextDate) + ' 已经有排期（时间：' + existingTime + '），是否继续顺延排期？')) {
+                            alert('排期操作已取消，请重新选择开始日期！');
+                            return;
+                        }
+                        // 顺延到下一天
+                        nextDate.setDate(nextDate.getDate() + 1);
+                        // 检查顺延后的日期是否是休息日
+                        loopCount = 0;
+                        while (isRestDay(formatDate(nextDate)) && loopCount < maxLoop) {
+                            nextDate.setDate(nextDate.getDate() + 1);
+                            loopCount++;
+                        }
+                        if (loopCount >= maxLoop) {
+                            alert('检测到过多休息日，无法生成排期，请调整开始日期或休息日设置！');
+                            return;
+                        }
+                    }
+                    
+                    // 查找可用的时间
+                    availableTime = findAvailableTime(formatDate(nextDate), tempSchedules, setting);
+                    if (!availableTime) {
+                        // 当天没有可用时间，顺延到下一天
+                        nextDate.setDate(nextDate.getDate() + 1);
+                        loopCount = 0;
+                        while (isRestDay(formatDate(nextDate)) && loopCount < maxLoop) {
+                            nextDate.setDate(nextDate.getDate() + 1);
+                            loopCount++;
+                        }
+                        if (loopCount >= maxLoop) {
+                            alert('检测到过多休息日，无法生成排期，请调整开始日期或休息日设置！');
+                            return;
+                        }
+                        availableTime = findAvailableTime(formatDate(nextDate), tempSchedules, setting);
+                        if (!availableTime) {
+                            alert('当天没有可用时间，请调整开始日期！');
+                            return;
+                        }
+                    }
+                    
+                    scheduleDates.push({ date: formatDate(nextDate), time: availableTime, index: 2, type: 'pre' });
+                    preDates.push(formatDate(nextDate));
+                    preTimes.push(availableTime);
+                    
+                    // 将生成的排期添加到临时列表中，避免后续排期重复使用同一时间段
+                    tempSchedules.push({
+                        date: formatDate(nextDate),
+                        time: availableTime
+                    });
+                    
+                    loopCount = 0;
+                    
+                    // 处理前第3次
+                    nextDate = new Date(nextDate);
+                    nextDate.setDate(nextDate.getDate() + (setting.enhancePre3 || 3) + 1);
+                    while (isRestDay(formatDate(nextDate)) && loopCount < maxLoop) {
+                        nextDate.setDate(nextDate.getDate() + 1);
+                        loopCount++;
+                    }
+                    if (loopCount >= maxLoop) {
+                        alert('检测到过多休息日，无法生成排期，请调整开始日期或休息日设置！');
+                        return;
+                    }
+                    
+                    // 检查该客户当天是否已经有排期
+                    while (hasCustomerScheduleOnDate(customerIndex, formatDate(nextDate), existingSchedules)) {
+                        const existingTime = getCustomerScheduleTimeOnDate(customerIndex, formatDate(nextDate), existingSchedules);
+                        if (!confirm('该客户在 ' + formatDate(nextDate) + ' 已经有排期（时间：' + existingTime + '），是否继续顺延排期？')) {
+                            alert('排期操作已取消，请重新选择开始日期！');
+                            return;
+                        }
+                        // 顺延到下一天
+                        nextDate.setDate(nextDate.getDate() + 1);
+                        // 检查顺延后的日期是否是休息日
+                        loopCount = 0;
+                        while (isRestDay(formatDate(nextDate)) && loopCount < maxLoop) {
+                            nextDate.setDate(nextDate.getDate() + 1);
+                            loopCount++;
+                        }
+                        if (loopCount >= maxLoop) {
+                            alert('检测到过多休息日，无法生成排期，请调整开始日期或休息日设置！');
+                            return;
+                        }
+                    }
+                    
+                    // 查找可用的时间
+                    availableTime = findAvailableTime(formatDate(nextDate), tempSchedules, setting);
+                    if (!availableTime) {
+                        // 当天没有可用时间，顺延到下一天
+                        nextDate.setDate(nextDate.getDate() + 1);
+                        loopCount = 0;
+                        while (isRestDay(formatDate(nextDate)) && loopCount < maxLoop) {
+                            nextDate.setDate(nextDate.getDate() + 1);
+                            loopCount++;
+                        }
+                        if (loopCount >= maxLoop) {
+                            alert('检测到过多休息日，无法生成排期，请调整开始日期或休息日设置！');
+                            return;
+                        }
+                        availableTime = findAvailableTime(formatDate(nextDate), tempSchedules, setting);
+                        if (!availableTime) {
+                            alert('当天没有可用时间，请调整开始日期！');
+                            return;
+                        }
+                    }
+                    
+                    scheduleDates.push({ date: formatDate(nextDate), time: availableTime, index: 3, type: 'pre' });
+                    preDates.push(formatDate(nextDate));
+                    preTimes.push(availableTime);
+                    
+                    // 将生成的排期添加到临时列表中，避免后续排期重复使用同一时间段
+                    tempSchedules.push({
+                        date: formatDate(nextDate),
+                        time: availableTime
+                    });
+                    
+                    loopCount = 0;
+                    
+                    // 处理前第4次
+                    nextDate = new Date(nextDate);
+                    nextDate.setDate(nextDate.getDate() + (setting.enhancePre4 || 3) + 1);
+                    while (isRestDay(formatDate(nextDate)) && loopCount < maxLoop) {
+                        nextDate.setDate(nextDate.getDate() + 1);
+                        loopCount++;
+                    }
+                    if (loopCount >= maxLoop) {
+                        alert('检测到过多休息日，无法生成排期，请调整开始日期或休息日设置！');
+                        return;
+                    }
+                    
+                    // 检查该客户当天是否已经有排期
+                    while (hasCustomerScheduleOnDate(customerIndex, formatDate(nextDate), existingSchedules)) {
+                        const existingTime = getCustomerScheduleTimeOnDate(customerIndex, formatDate(nextDate), existingSchedules);
+                        if (!confirm('该客户在 ' + formatDate(nextDate) + ' 已经有排期（时间：' + existingTime + '），是否继续顺延排期？')) {
+                            alert('排期操作已取消，请重新选择开始日期！');
+                            return;
+                        }
+                        // 顺延到下一天
+                        nextDate.setDate(nextDate.getDate() + 1);
+                        // 检查顺延后的日期是否是休息日
+                        loopCount = 0;
+                        while (isRestDay(formatDate(nextDate)) && loopCount < maxLoop) {
+                            nextDate.setDate(nextDate.getDate() + 1);
+                            loopCount++;
+                        }
+                        if (loopCount >= maxLoop) {
+                            alert('检测到过多休息日，无法生成排期，请调整开始日期或休息日设置！');
+                            return;
+                        }
+                    }
+                    
+                    // 查找可用的时间
+                    availableTime = findAvailableTime(formatDate(nextDate), tempSchedules, setting);
+                    if (!availableTime) {
+                        // 当天没有可用时间，顺延到下一天
+                        nextDate.setDate(nextDate.getDate() + 1);
+                        loopCount = 0;
+                        while (isRestDay(formatDate(nextDate)) && loopCount < maxLoop) {
+                            nextDate.setDate(nextDate.getDate() + 1);
+                            loopCount++;
+                        }
+                        if (loopCount >= maxLoop) {
+                            alert('检测到过多休息日，无法生成排期，请调整开始日期或休息日设置！');
+                            return;
+                        }
+                        availableTime = findAvailableTime(formatDate(nextDate), tempSchedules, setting);
+                        if (!availableTime) {
+                            alert('当天没有可用时间，请调整开始日期！');
+                            return;
+                        }
+                    }
+                    
+                    scheduleDates.push({ date: formatDate(nextDate), time: availableTime, index: 4, type: 'pre' });
+                    preDates.push(formatDate(nextDate));
+                    preTimes.push(availableTime);
+                    
+                    // 将生成的排期添加到临时列表中，避免后续排期重复使用同一时间段
+                    tempSchedules.push({
+                        date: formatDate(nextDate),
+                        time: availableTime
+                    });
+                    
+                    loopCount = 0;
+                    
+                    // 处理后第1次（插在前4与前5之间）
+                    var after1Date = new Date(nextDate);
+                    after1Date.setDate(after1Date.getDate() + (setting.enhanceAfter1 || 3));
+                    while (isRestDay(formatDate(after1Date)) && loopCount < maxLoop) {
+                        after1Date.setDate(after1Date.getDate() + 1);
+                        loopCount++;
+                    }
+                    if (loopCount >= maxLoop) {
+                        alert('检测到过多休息日，无法生成排期，请调整开始日期或休息日设置！');
+                        return;
+                    }
+                    
+                    // 检查该客户当天是否已经有排期
+                    while (hasCustomerScheduleOnDate(customerIndex, formatDate(after1Date), existingSchedules)) {
+                        const existingTime = getCustomerScheduleTimeOnDate(customerIndex, formatDate(after1Date), existingSchedules);
+                        if (!confirm('该客户在 ' + formatDate(after1Date) + ' 已经有排期（时间：' + existingTime + '），是否继续顺延排期？')) {
+                            alert('排期操作已取消，请重新选择开始日期！');
+                            return;
+                        }
+                        // 顺延到下一天
+                        after1Date.setDate(after1Date.getDate() + 1);
+                        // 检查顺延后的日期是否是休息日
+                        loopCount = 0;
+                        while (isRestDay(formatDate(after1Date)) && loopCount < maxLoop) {
+                            after1Date.setDate(after1Date.getDate() + 1);
+                            loopCount++;
+                        }
+                        if (loopCount >= maxLoop) {
+                            alert('检测到过多休息日，无法生成排期，请调整开始日期或休息日设置！');
+                            return;
+                        }
+                    }
+                    
+                    // 查找可用的时间
+                    availableTime = findAvailableTime(formatDate(after1Date), tempSchedules, setting);
+                    if (!availableTime) {
+                        // 当天没有可用时间，顺延到下一天
+                        after1Date.setDate(after1Date.getDate() + 1);
+                        loopCount = 0;
+                        while (isRestDay(formatDate(after1Date)) && loopCount < maxLoop) {
+                            after1Date.setDate(after1Date.getDate() + 1);
+                            loopCount++;
+                        }
+                        if (loopCount >= maxLoop) {
+                            alert('检测到过多休息日，无法生成排期，请调整开始日期或休息日设置！');
+                            return;
+                        }
+                        availableTime = findAvailableTime(formatDate(after1Date), tempSchedules, setting);
+                        if (!availableTime) {
+                            alert('当天没有可用时间，请调整开始日期！');
+                            return;
+                        }
+                    }
+                    
+                    scheduleDates.push({ date: formatDate(after1Date), time: availableTime, index: 5, type: 'after' });
+                    
+                    // 将生成的排期添加到临时列表中，避免后续排期重复使用同一时间段
+                    tempSchedules.push({
+                        date: formatDate(after1Date),
+                        time: availableTime
+                    });
+                    
+                    loopCount = 0;
+                    
+                    // 处理前第5次（从前4开始计算）
+                    nextDate = new Date(preDates[3]); // 前第4次日期
+                    nextDate.setDate(nextDate.getDate() + (setting.enhancePre5 || 5) + 1);
+                    while (isRestDay(formatDate(nextDate)) && loopCount < maxLoop) {
+                        nextDate.setDate(nextDate.getDate() + 1);
+                        loopCount++;
+                    }
+                    if (loopCount >= maxLoop) {
+                        alert('检测到过多休息日，无法生成排期，请调整开始日期或休息日设置！');
+                        return;
+                    }
+                    
+                    // 检查该客户当天是否已经有排期
+                    while (hasCustomerScheduleOnDate(customerIndex, formatDate(nextDate), existingSchedules)) {
+                        const existingTime = getCustomerScheduleTimeOnDate(customerIndex, formatDate(nextDate), existingSchedules);
+                        if (!confirm('该客户在 ' + formatDate(nextDate) + ' 已经有排期（时间：' + existingTime + '），是否继续顺延排期？')) {
+                            alert('排期操作已取消，请重新选择开始日期！');
+                            return;
+                        }
+                        // 顺延到下一天
+                        nextDate.setDate(nextDate.getDate() + 1);
+                        // 检查顺延后的日期是否是休息日
+                        loopCount = 0;
+                        while (isRestDay(formatDate(nextDate)) && loopCount < maxLoop) {
+                            nextDate.setDate(nextDate.getDate() + 1);
+                            loopCount++;
+                        }
+                        if (loopCount >= maxLoop) {
+                            alert('检测到过多休息日，无法生成排期，请调整开始日期或休息日设置！');
+                            return;
+                        }
+                    }
+                    
+                    // 查找可用的时间
+                    availableTime = findAvailableTime(formatDate(nextDate), tempSchedules, setting);
+                    if (!availableTime) {
+                        // 当天没有可用时间，顺延到下一天
+                        nextDate.setDate(nextDate.getDate() + 1);
+                        loopCount = 0;
+                        while (isRestDay(formatDate(nextDate)) && loopCount < maxLoop) {
+                            nextDate.setDate(nextDate.getDate() + 1);
+                            loopCount++;
+                        }
+                        if (loopCount >= maxLoop) {
+                            alert('检测到过多休息日，无法生成排期，请调整开始日期或休息日设置！');
+                            return;
+                        }
+                        availableTime = findAvailableTime(formatDate(nextDate), tempSchedules, setting);
+                        if (!availableTime) {
+                            alert('当天没有可用时间，请调整开始日期！');
+                            return;
+                        }
+                    }
+                    
+                    scheduleDates.push({ date: formatDate(nextDate), time: availableTime, index: 6, type: 'pre' });
+                    preDates.push(formatDate(nextDate));
+                    preTimes.push(availableTime);
+                    
+                    // 将生成的排期添加到临时列表中，避免后续排期重复使用同一时间段
+                    tempSchedules.push({
+                        date: formatDate(nextDate),
+                        time: availableTime
+                    });
+                    
+                    loopCount = 0;
+                    
+                    // 处理后第2次（插在前5与前6之间）
+                    var after2Date = new Date(nextDate);
+                    after2Date.setDate(after2Date.getDate() + (setting.enhanceAfter2 || 3));
+                    while (isRestDay(formatDate(after2Date)) && loopCount < maxLoop) {
+                        after2Date.setDate(after2Date.getDate() + 1);
+                        loopCount++;
+                    }
+                    if (loopCount >= maxLoop) {
+                        alert('检测到过多休息日，无法生成排期，请调整开始日期或休息日设置！');
+                        return;
+                    }
+                    
+                    // 检查该客户当天是否已经有排期
+                    while (hasCustomerScheduleOnDate(customerIndex, formatDate(after2Date), existingSchedules)) {
+                        const existingTime = getCustomerScheduleTimeOnDate(customerIndex, formatDate(after2Date), existingSchedules);
+                        if (!confirm('该客户在 ' + formatDate(after2Date) + ' 已经有排期（时间：' + existingTime + '），是否继续顺延排期？')) {
+                            alert('排期操作已取消，请重新选择开始日期！');
+                            return;
+                        }
+                        // 顺延到下一天
+                        after2Date.setDate(after2Date.getDate() + 1);
+                        // 检查顺延后的日期是否是休息日
+                        loopCount = 0;
+                        while (isRestDay(formatDate(after2Date)) && loopCount < maxLoop) {
+                            after2Date.setDate(after2Date.getDate() + 1);
+                            loopCount++;
+                        }
+                        if (loopCount >= maxLoop) {
+                            alert('检测到过多休息日，无法生成排期，请调整开始日期或休息日设置！');
+                            return;
+                        }
+                    }
+                    
+                    // 查找可用的时间
+                    availableTime = findAvailableTime(formatDate(after2Date), tempSchedules, setting);
+                    if (!availableTime) {
+                        // 当天没有可用时间，顺延到下一天
+                        after2Date.setDate(after2Date.getDate() + 1);
+                        loopCount = 0;
+                        while (isRestDay(formatDate(after2Date)) && loopCount < maxLoop) {
+                            after2Date.setDate(after2Date.getDate() + 1);
+                            loopCount++;
+                        }
+                        if (loopCount >= maxLoop) {
+                            alert('检测到过多休息日，无法生成排期，请调整开始日期或休息日设置！');
+                            return;
+                        }
+                        availableTime = findAvailableTime(formatDate(after2Date), tempSchedules, setting);
+                        if (!availableTime) {
+                            alert('当天没有可用时间，请调整开始日期！');
+                            return;
+                        }
+                    }
+                    
+                    scheduleDates.push({ date: formatDate(after2Date), time: availableTime, index: 7, type: 'after' });
+                    
+                    // 将生成的排期添加到临时列表中，避免后续排期重复使用同一时间段
+                    tempSchedules.push({
+                        date: formatDate(after2Date),
+                        time: availableTime
+                    });
+                    
+                    loopCount = 0;
+                    
+                    // 处理前第6次（从前5开始计算）
+                    nextDate = new Date(preDates[4]); // 前第5次日期
+                    nextDate.setDate(nextDate.getDate() + (setting.enhancePre6 || 6) + 1);
+                    while (isRestDay(formatDate(nextDate)) && loopCount < maxLoop) {
+                        nextDate.setDate(nextDate.getDate() + 1);
+                        loopCount++;
+                    }
+                    if (loopCount >= maxLoop) {
+                        alert('检测到过多休息日，无法生成排期，请调整开始日期或休息日设置！');
+                        return;
+                    }
+                    
+                    // 检查该客户当天是否已经有排期
+                    while (hasCustomerScheduleOnDate(customerIndex, formatDate(nextDate), existingSchedules)) {
+                        const existingTime = getCustomerScheduleTimeOnDate(customerIndex, formatDate(nextDate), existingSchedules);
+                        if (!confirm('该客户在 ' + formatDate(nextDate) + ' 已经有排期（时间：' + existingTime + '），是否继续顺延排期？')) {
+                            alert('排期操作已取消，请重新选择开始日期！');
+                            return;
+                        }
+                        // 顺延到下一天
+                        nextDate.setDate(nextDate.getDate() + 1);
+                        // 检查顺延后的日期是否是休息日
+                        loopCount = 0;
+                        while (isRestDay(formatDate(nextDate)) && loopCount < maxLoop) {
+                            nextDate.setDate(nextDate.getDate() + 1);
+                            loopCount++;
+                        }
+                        if (loopCount >= maxLoop) {
+                            alert('检测到过多休息日，无法生成排期，请调整开始日期或休息日设置！');
+                            return;
+                        }
+                    }
+                    
+                    // 查找可用的时间
+                    availableTime = findAvailableTime(formatDate(nextDate), tempSchedules, setting);
+                    if (!availableTime) {
+                        // 当天没有可用时间，顺延到下一天
+                        nextDate.setDate(nextDate.getDate() + 1);
+                        loopCount = 0;
+                        while (isRestDay(formatDate(nextDate)) && loopCount < maxLoop) {
+                            nextDate.setDate(nextDate.getDate() + 1);
+                            loopCount++;
+                        }
+                        if (loopCount >= maxLoop) {
+                            alert('检测到过多休息日，无法生成排期，请调整开始日期或休息日设置！');
+                            return;
+                        }
+                        availableTime = findAvailableTime(formatDate(nextDate), tempSchedules, setting);
+                        if (!availableTime) {
+                            alert('当天没有可用时间，请调整开始日期！');
+                            return;
+                        }
+                    }
+                    
+                    scheduleDates.push({ date: formatDate(nextDate), time: availableTime, index: 8, type: 'pre' });
+                    preDates.push(formatDate(nextDate));
+                    preTimes.push(availableTime);
+                    
+                    // 将生成的排期添加到临时列表中，避免后续排期重复使用同一时间段
+                    tempSchedules.push({
+                        date: formatDate(nextDate),
+                        time: availableTime
+                    });
+                    
+                    loopCount = 0;
+                    
+                    // 处理后第3次（插在前6与前7之间）
+                    var after3Date = new Date(nextDate);
+                    after3Date.setDate(after3Date.getDate() + (setting.enhanceAfter3 || 4));
+                    while (isRestDay(formatDate(after3Date)) && loopCount < maxLoop) {
+                        after3Date.setDate(after3Date.getDate() + 1);
+                        loopCount++;
+                    }
+                    if (loopCount >= maxLoop) {
+                        alert('检测到过多休息日，无法生成排期，请调整开始日期或休息日设置！');
+                        return;
+                    }
+                    
+                    // 检查该客户当天是否已经有排期
+                    while (hasCustomerScheduleOnDate(customerIndex, formatDate(after3Date), existingSchedules)) {
+                        const existingTime = getCustomerScheduleTimeOnDate(customerIndex, formatDate(after3Date), existingSchedules);
+                        if (!confirm('该客户在 ' + formatDate(after3Date) + ' 已经有排期（时间：' + existingTime + '），是否继续顺延排期？')) {
+                            alert('排期操作已取消，请重新选择开始日期！');
+                            return;
+                        }
+                        // 顺延到下一天
+                        after3Date.setDate(after3Date.getDate() + 1);
+                        // 检查顺延后的日期是否是休息日
+                        loopCount = 0;
+                        while (isRestDay(formatDate(after3Date)) && loopCount < maxLoop) {
+                            after3Date.setDate(after3Date.getDate() + 1);
+                            loopCount++;
+                        }
+                        if (loopCount >= maxLoop) {
+                            alert('检测到过多休息日，无法生成排期，请调整开始日期或休息日设置！');
+                            return;
+                        }
+                    }
+                    
+                    // 查找可用的时间
+                    availableTime = findAvailableTime(formatDate(after3Date), tempSchedules, setting);
+                    if (!availableTime) {
+                        // 当天没有可用时间，顺延到下一天
+                        after3Date.setDate(after3Date.getDate() + 1);
+                        loopCount = 0;
+                        while (isRestDay(formatDate(after3Date)) && loopCount < maxLoop) {
+                            after3Date.setDate(after3Date.getDate() + 1);
+                            loopCount++;
+                        }
+                        if (loopCount >= maxLoop) {
+                            alert('检测到过多休息日，无法生成排期，请调整开始日期或休息日设置！');
+                            return;
+                        }
+                        availableTime = findAvailableTime(formatDate(after3Date), tempSchedules, setting);
+                        if (!availableTime) {
+                            alert('当天没有可用时间，请调整开始日期！');
+                            return;
+                        }
+                    }
+                    
+                    scheduleDates.push({ date: formatDate(after3Date), time: availableTime, index: 9, type: 'after' });
+                    
+                    // 将生成的排期添加到临时列表中，避免后续排期重复使用同一时间段
+                    tempSchedules.push({
+                        date: formatDate(after3Date),
+                        time: availableTime
+                    });
+                    
+                    loopCount = 0;
+                    
+                    // 处理前第7次（从前6开始计算）
+                    nextDate = new Date(preDates[5]); // 前第6次日期
+                    nextDate.setDate(nextDate.getDate() + (setting.enhancePre7 || 7) + 1);
+                    while (isRestDay(formatDate(nextDate)) && loopCount < maxLoop) {
+                        nextDate.setDate(nextDate.getDate() + 1);
+                        loopCount++;
+                    }
+                    if (loopCount >= maxLoop) {
+                        alert('检测到过多休息日，无法生成排期，请调整开始日期或休息日设置！');
+                        return;
+                    }
+                    
+                    // 检查该客户当天是否已经有排期
+                    while (hasCustomerScheduleOnDate(customerIndex, formatDate(nextDate), existingSchedules)) {
+                        const existingTime = getCustomerScheduleTimeOnDate(customerIndex, formatDate(nextDate), existingSchedules);
+                        if (!confirm('该客户在 ' + formatDate(nextDate) + ' 已经有排期（时间：' + existingTime + '），是否继续顺延排期？')) {
+                            alert('排期操作已取消，请重新选择开始日期！');
+                            return;
+                        }
+                        // 顺延到下一天
+                        nextDate.setDate(nextDate.getDate() + 1);
+                        // 检查顺延后的日期是否是休息日
+                        loopCount = 0;
+                        while (isRestDay(formatDate(nextDate)) && loopCount < maxLoop) {
+                            nextDate.setDate(nextDate.getDate() + 1);
+                            loopCount++;
+                        }
+                        if (loopCount >= maxLoop) {
+                            alert('检测到过多休息日，无法生成排期，请调整开始日期或休息日设置！');
+                            return;
+                        }
+                    }
+                    
+                    // 查找可用的时间
+                    availableTime = findAvailableTime(formatDate(nextDate), tempSchedules, setting);
+                    if (!availableTime) {
+                        // 当天没有可用时间，顺延到下一天
+                        nextDate.setDate(nextDate.getDate() + 1);
+                        loopCount = 0;
+                        while (isRestDay(formatDate(nextDate)) && loopCount < maxLoop) {
+                            nextDate.setDate(nextDate.getDate() + 1);
+                            loopCount++;
+                        }
+                        if (loopCount >= maxLoop) {
+                            alert('检测到过多休息日，无法生成排期，请调整开始日期或休息日设置！');
+                            return;
+                        }
+                        availableTime = findAvailableTime(formatDate(nextDate), tempSchedules, setting);
+                        if (!availableTime) {
+                            alert('当天没有可用时间，请调整开始日期！');
+                            return;
+                        }
+                    }
+                    
+                    scheduleDates.push({ date: formatDate(nextDate), time: availableTime, index: 10, type: 'pre' });
+                    
+                    // 将生成的排期添加到临时列表中，避免后续排期重复使用同一时间段
+                    tempSchedules.push({
+                        date: formatDate(nextDate),
+                        time: availableTime
+                    });
+
+                }
+                
+                // 保存预览数据
+                batchPreviewData = scheduleDates.map(function(item) {
+                    // 根据排期类型选择项目
+                    var itemProject;
+                    if (courseType === 'base') {
+                        itemProject = project;
+                    } else {
+                        if (item.type === 'pre') {
+                            // 前七次使用前七主要调理项目
+                            itemProject = projectPre7;
+                        } else {
+                            // 后三次使用后三主要调理项目
+                            itemProject = projectAfter3;
+                        }
+                    }
+                    return {
+                        date: item.date,
+                        time: item.time,
+                        index: item.index,
+                        type: item.type,
+                        customerIndex: parseInt(customerIndex),
+                        customerName: customer.name,
+                        customerPhone: customer.phone,
+                        project: itemProject
+                    };
+                });
+                
+                // 显示预览
+                var previewBox = document.getElementById('batch-preview-box');
+                var previewList = document.getElementById('batch-preview-list');
+                var confirmBtn = document.getElementById('confirm-batch-btn');
+                
+                if (!previewBox || !previewList || !confirmBtn) {
+                    alert('预览组件加载失败，请检查页面结构！');
+                    return;
+                }
+                
+                // 生成表格格式的预览
+                var html = '<table style="width: 100%; border-collapse: collapse; font-size: 14px;">' +
+                          '<tr style="background-color: #f8f9fa; border-bottom: 2px solid #3498db;">' +
+                          '<th style="padding: 10px; text-align: left; border-bottom: 1px solid #e0e0e0;">序号</th>' +
+                          '<th style="padding: 10px; text-align: left; border-bottom: 1px solid #e0e0e0;">姓名</th>' +
+                          '<th style="padding: 10px; text-align: left; border-bottom: 1px solid #e0e0e0;">日期</th>' +
+                          '<th style="padding: 10px; text-align: left; border-bottom: 1px solid #e0e0e0;">时间</th>' +
+                          '<th style="padding: 10px; text-align: left; border-bottom: 1px solid #e0e0e0;">主要调理项目</th>' +
+                          '<th style="padding: 10px; text-align: left; border-bottom: 1px solid #e0e0e0;">完成状态</th>' +
+                          '<th style="padding: 10px; text-align: left; border-bottom: 1px solid #e0e0e0;">备注</th>' +
+                          '</tr>';
+                
+                batchPreviewData.forEach(function(item, index) {
+                    // 格式化日期为中文格式，包含农历和星期
+                    var chineseDate = formatDateChinese(item.date);
+                    
+                    // 生成备注
+                    var remark = '';
+                    if (courseType === 'base') {
+                        // 基础疗程：第N次
+                        remark = '第' + (index + 1) + '次';
+                    } else {
+                        // 加强疗程：前第X次或后第X次
+                        if (item.type === 'pre') {
+                            // 计算前几次的正确序号
+                            var preIndex = 0;
+                            for (var j = 0; j <= index; j++) {
+                                if (batchPreviewData[j].type === 'pre') {
+                                    preIndex++;
+                                }
+                            }
+                            remark = '前第' + preIndex + '次';
+                        } else {
+                            // 计算后几次的正确序号
+                            var afterIndex = 0;
+                            for (var j = 0; j <= index; j++) {
+                                if (batchPreviewData[j].type === 'after') {
+                                    afterIndex++;
+                                }
+                            }
+                            remark = '后第' + afterIndex + '次';
+                        }
+                    }
+                    
+                    html += '<tr style="border-bottom: 1px solid #f0f0f0;">' +
+                            '<td style="padding: 10px;">' + (index + 1) + '</td>' +
+                            '<td style="padding: 10px;">' + customer.name + '</td>' +
+                            '<td style="padding: 10px;">' + chineseDate + '</td>' +
+                            '<td style="padding: 10px;">' + item.time + '</td>' +
+                            '<td style="padding: 10px;">' + item.project + '</td>' +
+                            '<td style="padding: 10px;">未完成</td>' +
+                            '<td style="padding: 10px;">' + remark + '</td>' +
+                            '</tr>';
+                });
+                
+                html += '</table>';
+                
+                previewList.innerHTML = html;
+                previewBox.style.display = 'block';
+                confirmBtn.style.display = 'block';
+                
+                // 滚动到预览区域
+                previewBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                
+            } catch (e) {
+                console.error('预览批量排期失败:', e);
+                alert('生成排期预览失败：' + e.message + '，请重试！');
+            }
+        }
+
+        // 确认添加批量排期
+        function confirmBatchSchedule() {
+            try {
+                if (batchPreviewData.length === 0) {
+                    alert('暂无排期数据，请先预览！');
+                    return;
+                }
+                
+                var scheduleList = JSON.parse(localStorage.getItem('scheduleList') || '[]');
+                var now = new Date().toLocaleString();
+                
+                batchPreviewData.forEach(function(item) {
+                    scheduleList.push({
+                        id: Date.now() + Math.random().toString(36).substr(2, 9),
+                        customerIndex: item.customerIndex,
+                        customerName: item.customerName,
+                        customerPhone: item.customerPhone,
+                        date: item.date,
+                        time: item.time,
+                        project: item.project,
+                        status: 'uncompleted',
+                        createTime: now,
+                        type: 'batch'
+                    });
+                });
+                
+                localStorage.setItem('scheduleList', JSON.stringify(scheduleList));
+                
+                // 隐藏预览和确认按钮
+                document.getElementById('batch-preview-box').style.display = 'none';
+                document.getElementById('confirm-batch-btn').style.display = 'none';
+                
+                alert('批量排期添加成功，共' + batchPreviewData.length + '次排期！');
+                
+                // 清空预览数据
+                batchPreviewData = [];
+                
+                // 刷新排期列表
+                querySchedule();
+            } catch (e) {
+                console.error('确认批量排期失败:', e);
+                alert('添加批量排期失败，请重试！');
+            }
+        }
+
+        // 查询排期
+        function querySchedule() {
+            try {
+                var queryType = getElement('schedule-query-type').value;
+                var queryStatus = getElement('schedule-query-status').value;
+                var queryDate = getElement('query-date').value;
+                var queryCustomer = getElement('query-customer').value;
+                
+                var scheduleList = JSON.parse(localStorage.getItem('scheduleList') || '[]');
+                var filteredList = scheduleList;
+                
+                // 按查询类型筛选
+                if (queryType === 'date' && queryDate) {
+                    filteredList = filteredList.filter(function(item) { return item.date === queryDate; });
+                } else if (queryType === 'customer' && queryCustomer !== '') {
+                    filteredList = filteredList.filter(function(item) { return item.customerIndex === parseInt(queryCustomer); });
+                }
+                
+                // 按状态筛选
+                if (queryStatus !== 'all') {
+                    filteredList = filteredList.filter(function(item) { return item.status === queryStatus; });
+                }
+                
+                // 按日期和时间排序
+                filteredList.sort(function(a, b) {
+                    if (a.date !== b.date) {
+                        return a.date.localeCompare(b.date);
+                    }
+                    return a.time.localeCompare(b.time);
+                });
+                
+                // 保存当前查询结果
+                localStorage.setItem('currentQuerySchedule', JSON.stringify(filteredList));
+                
+                // 渲染排期列表
+                var scheduleListEl = getElement('schedule-list');
+                
+                if (!scheduleListEl) {
+                    return;
+                }
+                
+                if (filteredList.length === 0) {
+                    scheduleListEl.innerHTML = '<div class="empty-tip">暂无符合条件的排期数据</div>';
+                    return;
+                }
+                
+                var html = '';
+                filteredList.forEach(function(item, index) {
+                    // 格式化日期为中文格式
+                    var formattedDate = formatDateChinese(item.date);
+                    
+                    html += '<div class="list-item">' +
+                            '<div style="margin-right: 10px; flex-shrink: 0;">' +
+                            '<input type="checkbox" class="schedule-checkbox" value="' + item.id + '" style="margin-top: 5px;">' +
+                            '</div>' +
+                            '<div class="list-item-info" style="flex: 1;">' +
+                            '<div><strong>' + item.customerName + '</strong>（' + item.customerPhone + '）</div>' +
+                            '<div>' + formattedDate + ' ' + item.time + '</div>' +
+                            '<div>项目：' + item.project + ' | 类型：' + (item.type === 'single' ? '单次' : '批量') + '</div>' +
+                            '<div>状态：' + (item.status === 'completed' ? '<span style="color: #27ae60;">已完成</span>' : '<span style="color: #e74c3c;">未完成</span>') + '</div>' +
+                            '</div>' +
+                            '<div class="list-item-opt">' +
+                            '<button class="opt-btn opt-btn-edit" onclick="editSchedule(\'' + item.id + '\')">编辑</button>' +
+                            '<button class="opt-btn opt-btn-status" onclick="changeScheduleStatus(\'' + item.id + '\', \'' + item.status + '\')">' +
+                            (item.status === 'completed' ? '标记未完成' : '标记已完成') +
+                            '</button>' +
+                            '<button class="opt-btn opt-btn-del" onclick="deleteSchedule(\'' + item.id + '\')">删除</button>' +
+                            '</div>' +
+                            '</div>';
+                });
+                
+                scheduleListEl.innerHTML = html;
+            } catch (e) {
+                console.error('查询排期失败:', e);
+                alert('查询排期数据失败，请重试！');
+            }
+        }
+
+        // 更改排期状态
+        function changeScheduleStatus(id, status) {
+            try {
+                currentOperateId = id;
+                modalCallBack = function() {
+                    var scheduleList = JSON.parse(localStorage.getItem('scheduleList') || '[]');
+                    var index = -1;
+                    for (var i = 0; i < scheduleList.length; i++) {
+                        if (scheduleList[i].id === id) {
+                            index = i;
+                            break;
+                        }
+                    }
+                    
+                    if (index !== -1) {
+                        scheduleList[index].status = status === 'completed' ? 'uncompleted' : 'completed';
+                        localStorage.setItem('scheduleList', JSON.stringify(scheduleList));
+                        querySchedule();
+                        // 检查当前是否在排期视图页面
+                        var activePage = document.querySelector('.page.active');
+                        if (activePage && activePage.id === 'page-schedule-view') {
+                            // 获取当前显示的日期
+                            var selectedDateTitle = getElement('selected-date-title');
+                            if (selectedDateTitle) {
+                                // 从标题中提取日期
+                                var titleText = selectedDateTitle.textContent;
+                                var dateMatch = titleText.match(/(\d{4})年(\d{1,2})月(\d{1,2})日/);
+                                if (dateMatch) {
+                                    var year = dateMatch[1];
+                                    var month = dateMatch[2].toString().padStart(2, '0');
+                                    var day = dateMatch[3].toString().padStart(2, '0');
+                                    var date = year + '-' + month + '-' + day;
+                                    showScheduleByDate(date);
+                                    // 重新渲染日历以更新状态
+                                    renderCalendar(currentCalendarDate);
+                                }
+                            }
+                        }
+                    }
+                };
+                
+                // 显示弹窗
+                getElement('modal-title').textContent = status === 'completed' ? '确认标记为未完成？' : '确认标记为已完成？';
+                getElement('confirm-modal').style.display = 'flex';
+            } catch (e) {
+                console.error('更改排期状态失败:', e);
+                alert('修改排期状态失败，请重试！');
+            }
+        }
+
+        // 删除排期
+        function deleteSchedule(id) {
+            try {
+                currentOperateId = id;
+                modalCallBack = function() {
+                    var scheduleList = JSON.parse(localStorage.getItem('scheduleList') || '[]');
+                    var newList = [];
+                    for (var i = 0; i < scheduleList.length; i++) {
+                        if (scheduleList[i].id !== id) {
+                            newList.push(scheduleList[i]);
+                        }
+                    }
+                    localStorage.setItem('scheduleList', JSON.stringify(newList));
+                    querySchedule();
+                    // 检查当前是否在排期视图页面
+                    var activePage = document.querySelector('.page.active');
+                    if (activePage && activePage.id === 'page-schedule-view') {
+                        // 获取当前显示的日期
+                        var selectedDateTitle = getElement('selected-date-title');
+                        if (selectedDateTitle) {
+                            // 从标题中提取日期
+                            var titleText = selectedDateTitle.textContent;
+                            var dateMatch = titleText.match(/(\d{4})年(\d{1,2})月(\d{1,2})日/);
+                            if (dateMatch) {
+                                var year = dateMatch[1];
+                                var month = dateMatch[2].toString().padStart(2, '0');
+                                var day = dateMatch[3].toString().padStart(2, '0');
+                                var date = year + '-' + month + '-' + day;
+                                showScheduleByDate(date);
+                                // 重新渲染日历以更新状态
+                                renderCalendar(currentCalendarDate);
+                            }
+                        }
+                    }
+                };
+                
+                // 显示弹窗
+                getElement('modal-title').textContent = '确定要删除该排期吗？';
+                getElement('confirm-modal').style.display = 'flex';
+            } catch (e) {
+                console.error('删除排期失败:', e);
+                alert('删除排期失败，请重试！');
+            }
+        }
+        
+        // 批量删除排期
+        function batchDeleteSchedule() {
+            try {
+                var checkboxes = document.querySelectorAll('.schedule-checkbox:checked');
+                var selectedIds = [];
+                
+                checkboxes.forEach(function(checkbox) {
+                    selectedIds.push(checkbox.value);
+                });
+                
+                if (selectedIds.length === 0) {
+                    alert('请先选择要删除的排期！');
+                    return;
+                }
+                
+                currentOperateId = selectedIds;
+                modalCallBack = function() {
+                    var scheduleList = JSON.parse(localStorage.getItem('scheduleList') || '[]');
+                    var newList = [];
+                    for (var i = 0; i < scheduleList.length; i++) {
+                        if (selectedIds.indexOf(scheduleList[i].id) === -1) {
+                            newList.push(scheduleList[i]);
+                        }
+                    }
+                    localStorage.setItem('scheduleList', JSON.stringify(newList));
+                    querySchedule();
+                };
+                
+                // 显示弹窗
+                getElement('modal-title').textContent = '确定要删除选中的' + selectedIds.length + '个排期吗？';
+                getElement('confirm-modal').style.display = 'flex';
+            } catch (e) {
+                console.error('批量删除排期失败:', e);
+                alert('批量删除排期失败，请重试！');
+            }
+        }
+        
+        // 编辑排期
+        function editSchedule(id) {
+            try {
+                var scheduleList = JSON.parse(localStorage.getItem('scheduleList') || '[]');
+                var schedule = null;
+                
+                for (var i = 0; i < scheduleList.length; i++) {
+                    if (scheduleList[i].id === id) {
+                        schedule = scheduleList[i];
+                        break;
+                    }
+                }
+                
+                if (!schedule) {
+                    alert('排期信息不存在！');
+                    return;
+                }
+                
+                // 填充表单
+                getElement('edit-schedule-id').value = schedule.id;
+                getElement('edit-date').value = schedule.date;
+                getElement('edit-time').value = schedule.time;
+                getElement('edit-type').value = schedule.type;
+                getElement('edit-status').value = schedule.status;
+                
+                // 加载客户列表
+                var customerList = JSON.parse(localStorage.getItem('customerList') || '[]');
+                var editCustomerEl = getElement('edit-customer');
+                editCustomerEl.innerHTML = '<option value="">请选择客户</option>';
+                
+                customerList.forEach(function(item, index) {
+                    var option = document.createElement('option');
+                    option.value = index;
+                    option.textContent = item.name + '（' + item.phone + '）';
+                    if (index === schedule.customerIndex) {
+                        option.selected = true;
+                    }
+                    editCustomerEl.appendChild(option);
+                });
+                
+                // 加载项目列表
+                var projectList = JSON.parse(localStorage.getItem('projectList') || '[]');
+                var editProjectEl = getElement('edit-project');
+                editProjectEl.innerHTML = '<option value="">请选择调理项目</option>';
+                
+                projectList.forEach(function(item) {
+                    var option = document.createElement('option');
+                    option.value = item.name;
+                    option.textContent = item.name;
+                    if (item.name === schedule.project) {
+                        option.selected = true;
+                    }
+                    editProjectEl.appendChild(option);
+                });
+                
+                // 显示编辑表单
+                getElement('schedule-edit-form').style.display = 'block';
+                // 滚动到表单位置
+                getElement('page-schedule').scrollTop = 0;
+            } catch (e) {
+                console.error('编辑排期失败:', e);
+                alert('加载排期编辑信息失败，请重试！');
+            }
+        }
+        
+        // 取消编辑排期
+        function cancelEditSchedule() {
+            getElement('schedule-edit-form').style.display = 'none';
+            getElement('edit-schedule-id').value = '';
+        }
+        
+        // 保存排期修改
+        function saveSchedule() {
+            try {
+                var scheduleId = getElement('edit-schedule-id').value;
+                var customerIndex = getElement('edit-customer').value;
+                var date = getElement('edit-date').value;
+                var time = getElement('edit-time').value;
+                var project = getElement('edit-project').value;
+                var type = getElement('edit-type').value;
+                var status = getElement('edit-status').value;
+                
+                // 验证
+                if (customerIndex === '') {
+                    alert('请选择客户！');
+                    return;
+                }
+                if (!date) {
+                    alert('请选择排期日期！');
+                    return;
+                }
+                if (!time) {
+                    alert('请选择排期时间！');
+                    return;
+                }
+                if (!project) {
+                    alert('请选择调理项目！');
+                    return;
+                }
+                
+                var scheduleList = JSON.parse(localStorage.getItem('scheduleList') || '[]');
+                var originalSchedule = null;
+                var index = -1;
+                
+                for (var i = 0; i < scheduleList.length; i++) {
+                    if (scheduleList[i].id === scheduleId) {
+                        originalSchedule = scheduleList[i];
+                        index = i;
+                        break;
+                    }
+                }
+                
+                if (index === -1) {
+                    alert('排期信息不存在！');
+                    return;
+                }
+                
+                // 检查同一时间段是否有其他排期
+                for (var i = 0; i < scheduleList.length; i++) {
+                    if (i !== index && scheduleList[i].date === date && scheduleList[i].time === time) {
+                        alert('该时间段已被其他客户排期，请选择其他时间！');
+                        return;
+                    }
+                }
+                
+                // 检查同一客户是否在同一天有其他排期
+                for (var i = 0; i < scheduleList.length; i++) {
+                    if (i !== index && scheduleList[i].customerIndex === parseInt(customerIndex) && scheduleList[i].date === date) {
+                        alert('该客户在当天已有排期，请选择其他日期！');
+                        return;
+                    }
+                }
+                
+                // 检查是否是休息日
+                if (isRestDay(date)) {
+                    if (!confirm('所选日期是休息日/节假日，确定要继续编辑吗？')) {
+                        return;
+                    }
+                }
+                
+                var customerList = JSON.parse(localStorage.getItem('customerList') || '[]');
+                var customer = customerList[customerIndex];
+                
+                // 更新排期信息
+                scheduleList[index] = {
+                    id: scheduleId,
+                    customerIndex: parseInt(customerIndex),
+                    customerName: customer.name,
+                    customerPhone: customer.phone,
+                    date: date,
+                    time: time,
+                    project: project,
+                    status: status,
+                    createTime: originalSchedule.createTime,
+                    type: type
+                };
+                
+                localStorage.setItem('scheduleList', JSON.stringify(scheduleList));
+                getElement('schedule-edit-form').style.display = 'none';
+                getElement('edit-schedule-id').value = '';
+                querySchedule();
+                alert('排期编辑成功！');
+            } catch (e) {
+                console.error('保存排期失败:', e);
+                alert('编辑排期失败，请重试！');
+            }
+        }
+
+        // 关闭弹窗
+        function closeModal() {
+            var modal = getElement('confirm-modal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+            currentOperateId = '';
+            modalCallBack = null;
+        }
+
+        // 确认弹窗操作
+        function confirmModal() {
+            try {
+                if (modalCallBack && typeof modalCallBack === 'function') {
+                    modalCallBack();
+                    alert('操作成功！');
+                }
+                closeModal();
+            } catch (e) {
+                console.error('确认弹窗操作失败:', e);
+                alert('操作失败，请重试！');
+                closeModal();
+            }
+        }
+
+        // 全局变量 - 日历相关
+        var currentCalendarDate = new Date();
+        
+        // 初始化日历
+        function initCalendar() {
+            renderCalendar(currentCalendarDate);
+            showScheduleByDate(getTodayDate());
+        }
+        
+        // 切换月份
+        function changeMonth(direction) {
+            currentCalendarDate.setMonth(currentCalendarDate.getMonth() + direction);
+            renderCalendar(currentCalendarDate);
+        }
+        
+        // 渲染日历
+        function renderCalendar(date) {
+            var year = date.getFullYear();
+            var month = date.getMonth();
+            
+            // 更新当前月份显示
+            getElement('current-month').textContent = year + '年' + (month + 1) + '月';
+            
+            var calendarContainer = getElement('calendar-container');
+            if (!calendarContainer) return;
+            
+            // 获取当月第一天
+            var firstDay = new Date(year, month, 1);
+            // 获取当月最后一天
+            var lastDay = new Date(year, month + 1, 0);
+            // 获取当月第一天是星期几
+            var startDay = firstDay.getDay();
+            // 获取当月的天数
+            var daysInMonth = lastDay.getDate();
+            
+            // 生成日历HTML
+            var html = '<table style="width: 100%; border-collapse: collapse; font-size: 14px;">';
+            
+            // 星期标题
+            var weekdays = ['日', '一', '二', '三', '四', '五', '六'];
+            html += '<tr>';
+            for (var i = 0; i < weekdays.length; i++) {
+                html += '<th style="text-align: center; padding: 10px; border: 1px solid #e0e0e0; background-color: #f8f9fa;">' + weekdays[i] + '</th>';
+            }
+            html += '</tr>';
+            
+            // 日历格子
+            var dayCount = 1;
+            var rowCount = Math.ceil((startDay + daysInMonth) / 7);
+            
+            for (var i = 0; i < rowCount; i++) {
+                html += '<tr>';
+                for (var j = 0; j < 7; j++) {
+                    if ((i === 0 && j < startDay) || dayCount > daysInMonth) {
+                        // 空白格子
+                        html += '<td style="height: 80px; padding: 5px; border: 1px solid #e0e0e0;"></td>';
+                    } else {
+                        var currentDate = year + '-' + (month + 1).toString().padStart(2, '0') + '-' + dayCount.toString().padStart(2, '0');
+                        var schedules = getSchedulesByDate(currentDate);
+                        var hasSchedule = schedules.length > 0;
+                        var isToday = currentDate === getTodayDate();
+                        
+                        html += '<td style="height: 80px; padding: 5px; border: 1px solid #e0e0e0; vertical-align: top; cursor: pointer;' + 
+                                (isToday ? ' background-color: #e3f2fd;' : '') + 
+                                (hasSchedule ? ' background-color: #fff3cd;' : '') + '">' +
+                                '<div style="font-weight: bold; margin-bottom: 3px;">' + dayCount + '</div>';
+                        
+                        // 显示排期客户
+                        if (hasSchedule) {
+                            var customerNames = [];
+                            schedules.forEach(function(schedule) {
+                                if (!customerNames.includes(schedule.customerName)) {
+                                    customerNames.push(schedule.customerName);
+                                }
+                            });
+                            html += '<div style="font-size: 12px; line-height: 1.2;">' + customerNames.slice(0, 2).join(', ') + (customerNames.length > 2 ? '...' : '') + '</div>';
+                        }
+                        
+                        html += '<div style="display: none;">' + currentDate + '</div>' +
+                                '</td>';
+                        dayCount++;
+                    }
+                }
+                html += '</tr>';
+            }
+            
+            html += '</table>';
+            calendarContainer.innerHTML = html;
+            
+            // 添加日期点击事件
+            var calendarCells = calendarContainer.querySelectorAll('td');
+            calendarCells.forEach(function(cell) {
+                var dateEl = cell.querySelector('div:last-child');
+                if (dateEl && dateEl.textContent) {
+                    cell.addEventListener('click', function() {
+                        var date = dateEl.textContent;
+                        showScheduleByDate(date);
+                    });
+                }
+            });
+        }
+        
+        // 根据日期获取排期
+        function getSchedulesByDate(date) {
+            var scheduleList = JSON.parse(localStorage.getItem('scheduleList') || '[]');
+            return scheduleList.filter(function(item) {
+                return item.date === date;
+            });
+        }
+        
+        // 显示指定日期的排期
+        function showScheduleByDate(date) {
+            var schedules = getSchedulesByDate(date);
+            var scheduleViewList = getElement('schedule-view-list');
+            var selectedDateTitle = getElement('selected-date-title');
+            
+            if (!scheduleViewList || !selectedDateTitle) return;
+            
+            // 更新标题
+            var dateObj = new Date(date);
+            var year = dateObj.getFullYear();
+            var month = dateObj.getMonth() + 1;
+            var day = dateObj.getDate();
+            selectedDateTitle.textContent = year + '年' + month + '月' + day + '日 排期客户';
+            
+            // 显示排期列表
+            if (schedules.length === 0) {
+                scheduleViewList.innerHTML = '<div class="empty-tip">暂无排期数据</div>';
+                return;
+            }
+            
+            var html = '';
+            schedules.forEach(function(item) {
+                // 格式化日期为中文格式
+                var formattedDate = formatDateChinese(item.date);
+                
+                html += '<div class="list-item">' +
+                        '<div class="list-item-info">' +
+                        '<div><strong>' + item.customerName + '</strong>（' + item.customerPhone + '）</div>' +
+                        '<div>' + formattedDate + ' ' + item.time + '</div>' +
+                        '<div>项目：' + item.project + ' | 类型：' + (item.type === 'single' ? '单次' : '批量') + '</div>' +
+                        '<div>状态：' + (item.status === 'completed' ? '<span style="color: #27ae60;">已完成</span>' : '<span style="color: #e74c3c;">未完成</span>') + '</div>' +
+                        '</div>' +
+                        '<div class="list-item-opt">' +
+                        '<button class="opt-btn opt-btn-status" onclick="changeScheduleStatus(\'' + item.id + '\', \'' + item.status + '\')">' +
+                        (item.status === 'completed' ? '标记未完成' : '标记已完成') +
+                        '</button>' +
+                        '<button class="opt-btn opt-btn-del" onclick="deleteSchedule(\'' + item.id + '\')">删除</button>' +
+                        '</div>' +
+                        '</div>';
+            });
+            
+            scheduleViewList.innerHTML = html;
+        }
+        
+        // 复制所有排期信息
+        function copyAllSchedule() {
+            try {
+                var currentQuerySchedule = JSON.parse(localStorage.getItem('currentQuerySchedule') || '[]');
+                
+                if (currentQuerySchedule.length === 0) {
+                    alert('暂无排期数据可复制！');
+                    return;
+                }
+                
+                // 构建复制文本
+                var copyText = '📅 宫诚阁客户排期信息\n\n';
+                
+                // 按日期排序
+                currentQuerySchedule.sort(function(a, b) {
+                    if (a.date !== b.date) {
+                        return a.date.localeCompare(b.date);
+                    }
+                    return a.time.localeCompare(b.time);
+                });
+                
+                // 直接遍历排期信息，每条都显示完整日期
+                for (var i = 0; i < currentQuerySchedule.length; i++) {
+                    var item = currentQuerySchedule[i];
+                    
+                    // 格式化日期为中文格式
+                    var formattedDate = formatDateChinese(item.date);
+                    copyText += '📆 ' + formattedDate + '\n';
+                    
+                    // 添加排期信息
+                    copyText += '👤 ' + item.customerName + '（' + item.customerPhone + '）\n';
+                    copyText += '⏰ ' + item.time + ' | 📌 ' + item.project + '\n';
+                    copyText += '📊 状态：' + (item.status === 'completed' ? '✅ 已完成' : '🔄 未完成') + '\n\n';
+                }
+                
+                // 复制到剪贴板
+                if (navigator.clipboard && window.isSecureContext) {
+                    navigator.clipboard.writeText(copyText).then(function() {
+                        var copyTip = document.getElementById('copy-tip');
+                        if (copyTip) {
+                            copyTip.style.display = 'block';
+                            setTimeout(function() { copyTip.style.display = 'none'; }, 3000);
+                        }
+                    }).catch(function() {
+                        fallbackCopyTextToClipboard(copyText);
+                    });
+                } else {
+                    fallbackCopyTextToClipboard(copyText);
+                }
+                
+            } catch (e) {
+                alert('复制排期信息失败，请手动复制！');
+            }
+        }
+
+        // 复制降级方案
+        function fallbackCopyTextToClipboard(text) {
+            var textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.top = 0;
+            textArea.style.left = 0;
+            textArea.style.opacity = 0;
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                var copyTip = document.getElementById('copy-tip');
+                if (copyTip) {
+                    copyTip.style.display = 'block';
+                    setTimeout(function() { copyTip.style.display = 'none'; }, 3000);
+                }
+            } catch (err) {
+                console.error('复制失败:', err);
+                alert('复制失败，请手动复制！');
+            } finally {
+                document.body.removeChild(textArea);
+            }
+        }
+
+        // 复制选择排期信息
+        function copySelectedSchedule() {
+            try {
+                var checkboxes = document.querySelectorAll('.schedule-checkbox:checked');
+                var selectedIds = [];
+                
+                checkboxes.forEach(function(checkbox) {
+                    selectedIds.push(checkbox.value);
+                });
+                
+                if (selectedIds.length === 0) {
+                    alert('请先选择要复制的排期！');
+                    return;
+                }
+                
+                var currentQuerySchedule = JSON.parse(localStorage.getItem('currentQuerySchedule') || '[]');
+                var selectedSchedules = currentQuerySchedule.filter(function(item) {
+                    return selectedIds.includes(item.id);
+                });
+                
+                // 构建复制文本
+                var copyText = '📅 宫诚阁客户排期信息\n\n';
+                
+                // 按日期排序
+                selectedSchedules.sort(function(a, b) {
+                    if (a.date !== b.date) {
+                        return a.date.localeCompare(b.date);
+                    }
+                    return a.time.localeCompare(b.time);
+                });
+                
+                // 直接遍历排期信息，每条都显示完整日期
+                for (var i = 0; i < selectedSchedules.length; i++) {
+                    var item = selectedSchedules[i];
+                    
+                    // 格式化日期为中文格式
+                    var formattedDate = formatDateChinese(item.date);
+                    copyText += '📆 ' + formattedDate + '\n';
+                    
+                    // 添加排期信息
+                    copyText += '👤 ' + item.customerName + '（' + item.customerPhone + '）\n';
+                    copyText += '⏰ ' + item.time + ' | 📌 ' + item.project + '\n';
+                    copyText += '📊 状态：' + (item.status === 'completed' ? '✅ 已完成' : '🔄 未完成') + '\n\n';
+                }
+                
+                // 复制到剪贴板
+                if (navigator.clipboard && window.isSecureContext) {
+                    navigator.clipboard.writeText(copyText).then(function() {
+                        var copyTip = document.getElementById('copy-tip');
+                        if (copyTip) {
+                            copyTip.style.display = 'block';
+                            setTimeout(function() { copyTip.style.display = 'none'; }, 3000);
+                        }
+                    }).catch(function() {
+                        fallbackCopyTextToClipboard(copyText);
+                    });
+                } else {
+                    fallbackCopyTextToClipboard(copyText);
+                }
+                
+            } catch (e) {
+                
+                alert('复制排期信息失败，请手动复制！');
+            }
+        }
+
+        // 格式化日期为YYYY-MM-DD
+        function formatDate(date) {
+            var year = date.getFullYear();
+            var month = date.getMonth() + 1;
+            var day = date.getDate();
+            
+            // 手动补零
+            if (month < 10) month = '0' + month;
+            if (day < 10) day = '0' + day;
+            
+            return year + '-' + month + '-' + day;
+        }
+
+        // 日期缓存，避免重复计算农历信息
+        var dateCache = {};
+        
+        // 格式化日期为中文格式，包含农历和星期
+        function formatDateChinese(dateStr) {
+            try {
+                // 直接计算，不使用缓存
+                var dateArr = dateStr.split('-');
+                if (dateArr.length !== 3) {
+                    return dateStr;
+                }
+                var year = parseInt(dateArr[0]);
+                var month = parseInt(dateArr[1]);
+                var day = parseInt(dateArr[2]);
+                
+                // 公历日期
+                var chineseDate = year + '年' + month + '月' + day + '日';
+                
+                // 农历日期
+                var lunarInfo = '';
+                try {
+                    // 使用农历转换算法
+                    var lunarDate = solarToLunar(year, month, day);
+                    if (lunarDate && lunarDate.lunarMonth && lunarDate.lunarDay) {
+                        var lunarMonthStr = (lunarDate.isLeap ? '闰' : '') + lunarDate.lunarMonth;
+                        var lunarDayStr = lunarDate.lunarDay;
+                        
+                        lunarInfo = '（' + lunarMonthStr + lunarDayStr + '）';
+                    } else {
+                        lunarInfo = '（农历）';
+                    }
+                } catch (e) {
+                    lunarInfo = '（农历）';
+                }
+                
+                // 检查是否为二十四节气
+                var solarTerm = '';
+                try {
+                    solarTerm = getSolarTerm(year, month, day);
+                } catch (e) {
+                    solarTerm = '';
+                }
+                var weekOrTerm = '';
+                
+                if (solarTerm) {
+                    // 如果是节气，显示节气名称
+                    weekOrTerm = solarTerm;
+                } else {
+                    // 否则显示星期几
+                    var weekDays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+                    try {
+                        var date = new Date(dateStr);
+                        var dayOfWeek = date.getDay();
+                        if (dayOfWeek >= 0 && dayOfWeek < weekDays.length) {
+                            weekOrTerm = weekDays[dayOfWeek];
+                        } else {
+                            weekOrTerm = '';
+                        }
+                    } catch (e) {
+                        weekOrTerm = '';
+                    }
+                }
+                
+                var result = chineseDate + lunarInfo + weekOrTerm;
+                return result;
+            } catch (e) {
+                return dateStr;
+            }
+        }
+        
+
+
+        // 判断是否是休息日
+        function isRestDay(dateStr) {
+            try {
+                var date = new Date(dateStr);
+                var dayOfWeek = date.getDay();
+                
+                // 检查是否是每周休息日
+                var setting = JSON.parse(localStorage.getItem('systemSetting') || '{}');
+                var restSet = setting.restSet || [0];
+                for (var i = 0; i < restSet.length; i++) {
+                    if (restSet[i] === dayOfWeek) {
+                        return true;
+                    }
+                }
+                
+                // 检查是否是节假日
+                var holidayList = JSON.parse(localStorage.getItem('holidayList') || '[]');
+                for (var i = 0; i < holidayList.length; i++) {
+                    if (holidayList[i].date === dateStr) {
+                        return true;
+                    }
+                }
+                return false;
+            } catch (e) {
+                console.error('判断休息日失败:', e);
+                return false;
+            }
+        }
+</script>
